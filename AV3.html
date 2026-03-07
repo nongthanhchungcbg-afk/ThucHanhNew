@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<title>Ôn Tập NN Chuyên Ngành CNTT</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+  <!-- Thêm sau thẻ <title> -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
+<meta name="theme-color" content="#ffffff">
+<link rel="apple-touch-icon" href="https://img.icons8.com/color/96/000000/test-passed.png">
+<meta name="apple-mobile-web-app-title" content="Ôn Tập NN">
+<style>
+:root {
+  --bg1: #ff6ec4;
+  --bg2: #7873f5;
+  --bg3: #23a6d5;
+  --bg4: #23d5ab;
+
+  --card-bg: rgba(0, 0, 0, 0.38);
+  --ok: #2ecc71;
+  --err: #ff6b6b;
+  --text: #ffffff;
+}
+/* Chữ câu hỏi màu đen */
+.question p {
+  color: #000;           /* đen */
+  font-weight: 700;
+}
+/* Giữ đáp án màu trắng */
+.answers label {
+  color: #171817;
+}
+body {
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background-color: hwb(0 100% 0%);
+  color: var(--text);
+  padding:20px;
+  /* thêm hiệu ứng viền sáng 2 bên */
+  box-shadow: inset 12px 0 20px #533151, inset -12px 0 20px #432a49;
+}
+.wrap{max-width:1100px;margin:0 auto;background:var(--card-bg);border-radius:12px;padding:18px;box-shadow:0 8px 30px rgba(0,0,0,0.5)}
+h1{color:rgb(49, 42, 119);margin:6px 0 2px;text-shadow:0 0 8px #0ff}
+h2{margin:6px 0 18px;font-weight:normal}
+.btn{display:inline-block;padding:10px 16px;margin:20px;border-radius:8px;border:none;background:cyan;color:#000;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.15)}
+.btn:hover{transform:translateY(-2px)}
+section{padding:14px 6px}
+.hidden{display:none} 
+.question{background:rgba(255,255,255,0.03);padding:12px;border-radius:8px;margin-bottom:10px;text-align:left}
+.question p{margin:0 0 8px;font-weight:700}
+.answers label{display:block;margin:6px 0;cursor:pointer}
+.feedback {
+  margin-top: 6px;
+  font-weight: 700;
+}
+.feedback {
+  font-size: 16px;
+  padding: 8px;
+  margin-top: 10px;
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.1);
+  font-weight: 700;
+}
+.feedback.ok {
+  color: #02ff24;
+  background-color: rgba(46, 204, 113, 0.1);
+  font-weight: bold;
+}
+
+.feedback.err {
+  color: #f51900;
+  background-color: rgba(231, 76, 60, 0.1);
+  font-weight: bold;
+}
+.drag-area {
+  display: flex;
+  gap: 12px;
+  flex-direction: column;
+  background-color: #d9e5e9;   /* nền xanh da trời nhạt */
+  border: 2px solid #4da6ff;   /* viền xanh */
+  border-radius: 8px;
+  padding: 12px;
+}
+.draggable-source, .draggable-target {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 48px;
+  padding: 8px;
+  border-radius: 8px;
+  background-color: #f0fbff;   /* nền xanh nhạt rõ hơn */
+  border: 2px dashed #4da6ff;  /* viền nét đứt xanh */
+}
+/* từng chữ để kéo */
+.draggable-source span, .draggable-target span {
+  background-color: #cce9ff;   /* nền ô chữ xanh da trời nhạt */
+  color: #0f79e4;              /* chữ xanh đậm */
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: grab;
+  font-weight: 600;
+}
+.draggable-source .token,
+.draggable-target .token {
+  background: rgba(255, 255, 255, 0.04);
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: grab;
+  color: #3f413f !important; /* Màu đen cho chữ */
+  font-weight: 600;}
+.token.dragging {
+  opacity: 0.5;}
+#results {
+  margin-top: 10px;
+  font-size: 18px;
+  font-weight: 800;}
+footer {
+  margin-top: 0px;
+  color: #1c221c; /* đổi màu chữ phần tác giả */
+  font-size: 19px;
+  text-align: center;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* đổ bóng chữ */}
+.correct-answer{font-weight:700;color:var(--ok);margin-left:6px}
+input[type=text]{padding:8px;border-radius:6px;border:none;background:rgba(255,255,255,0.06);color:var(--text);width:80%;margin-top:6px}
+.reading {
+  background: rgba(0,0,0,0.12);  /* nền xám nhạt */
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  font-size: 20px;
+  color: #000;        /* chữ đen */
+  font-style: italic; /* in nghiêng */}
+.small {
+  font-size: 13px;
+  color: #111 !important; /* Màu đen đậm hơn */
+  margin-top: 6px;
+  font-weight: bold;
+  text-shadow: none; /* Bỏ đổ bóng nếu có */}
+#intro {
+  display: flex;
+  flex-direction: column;   /* xếp theo cột: h1, h2, nút */
+  justify-content: center;  /* căn giữa theo chiều dọc trong khung #intro */
+  align-items: center;      /* căn giữa theo chiều ngang */
+  text-align: center;       /* căn giữa chữ bên trong */
+  min-height: 60vh;         /* chiếm 60% chiều cao viewport (điều chỉnh nếu cần) */
+  gap: 10px;                /* khoảng cách giữa h1, h2 và nút */}
+/* (tùy chọn) tinh chỉnh margin cho tiêu đề nếu cần */
+#intro h1 { margin: 0; }
+#intro h2 { margin: 0; font-weight: 400; }
+/* ---- chèn kết thúc ---- */
+input[type="text"] {
+  background-color: #e0f7fa;   /* xanh da trời nhạt */
+  border: 2px solid #0288d1;   /* viền xanh đậm */
+  border-radius: 6px;          /* bo góc */
+  padding: 8px;
+  font-size: 16px;
+  color: black;                /* chữ màu đen */
+}
+
+/* CSS mới cho nút Bắt đầu */
+#btnStart {
+  font-size: 25px;        /* chữ lớn hơn */
+  padding: 20px 25px;     /* nút to hơn */
+  font-weight: 700;       /* chữ đậm */
+}
+
+
+
+/* Responsive cho điện thoại */
+@media screen and (max-width: 768px) {
+  body {
+    padding: 10px;
+    box-shadow: none; /* Bỏ hiệu ứng viền trên mobile */
+  }
+  
+  .wrap {
+    padding: 12px;
+    margin: 0 auto;
+    max-width: 100%;
+  }
+  
+  .btn {
+    padding: 12px 16px;
+    margin: 10px;
+    font-size: 16px;
+    width: 90%;
+    max-width: 300px;
+  }
+  
+  #monhoc .btn {
+    width: 45%;
+    min-width: 120px;
+    margin: 8px;
+  }
+  
+  .question {
+    padding: 10px;
+    margin-bottom: 8px;
+  }
+  
+  .question p {
+    font-size: 16px;
+    line-height: 1.4;
+  }
+  
+  .answers label {
+    font-size: 15px;
+    padding: 8px 0;
+  }
+  
+  input[type="text"] {
+    width: 95%;
+    font-size: 16px; /* Tăng font size để dễ nhập trên mobile */
+    padding: 10px;
+  }
+  
+  .reading {
+    font-size: 16px;
+    padding: 10px;
+    line-height: 1.5;
+  }
+  
+  .draggable-source, .draggable-target {
+    min-height: 44px; /* Kích thước touch-friendly */
+  }
+  
+  .draggable-source .token,
+  .draggable-target .token {
+    padding: 10px 14px;
+    font-size: 16px;
+    margin: 4px;
+  }
+  
+  h1 {
+    font-size: 24px;
+  }
+  
+  h2 {
+    font-size: 18px;
+  }
+  
+  #btnStart {
+    font-size: 20px;
+    padding: 16px 20px;
+  }
+  
+  #quizTitle {
+    font-size: 22px;
+    text-align: center;
+  }
+}
+
+/* Responsive cho iPhone nhỏ */
+@media screen and (max-width: 375px) {
+  #monhoc .btn {
+    width: 90%;
+    margin: 6px auto;
+  }
+  
+  .btn {
+    padding: 10px 14px;
+    font-size: 15px;
+  }
+  
+  .question p {
+    font-size: 15px;
+  }
+}
+
+/* Sửa cho input trên iOS */
+input[type="text"], 
+input[type="email"], 
+input[type="password"], 
+textarea {
+  --webkit-appearance: none; /* Tắt style mặc định iOS */
+  border-radius: 6px;
+  font-size: 16px; /* Ngăn iOS zoom khi focus */
+}
+
+/* Fix cho dropdown trên iOS */
+select {
+  font-size: 16px; /* Ngăn iOS zoom */
+}
+
+/* Tối ưu cho touch trên iOS */
+.btn, 
+.answers label, 
+.draggable-source .token,
+.draggable-target .token {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent; /* Bỏ highlight xanh khi chạm */
+}
+
+/* Tối ưu scroll trên iOS */
+html {
+  -webkit-overflow-scrolling: touch; /* Scroll mượt trên iOS */
+}
+
+.wrap {
+  overflow-x: hidden; /* Ngăn scroll ngang */
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section id="intro">
+    <h1>Ôn Tập Trắc Nghiệm</h1>
+    <h2>Anh Văn 3 - CNTT</h2>
+    <button class="btn" id="btnStart">Bắt đầu</button>
+  </section>
+
+  <section id="monhoc" class="hidden">
+    <h1>Chọn Unit</h1>
+
+    <button class="btn" id="btnCntt1">Unit 1</button>    
+    <button class="btn" id="btnCntt2">Unit 2</button>
+    <button class="btn" id="btnCntt3">Unit 3</button>
+    <button class="btn" id="btnCntt4">Unit 4</button>
+    <button class="btn" id="btnCntt5">Unit 5</button>
+    <button class="btn" id="btnCntt6">Unit 6</button>
+    <button class="btn" id="btnCntt7">Unit 7</button>
+    <button class="btn" id="btnCntt8">Unit 8</button>
+    <button class="btn" id="btnCntt9">Unit 9</button>
+    <div style="margin-top:12px">
+      <button class="btn" id="btnBackIntro">← Quay lại</button>
+    </div>
+  </section>
+
+  <section id="baitap" class="hidden">
+    <h1 id="quizTitle">Bài tập trắc nghiệm</h1>
+    <div id="quiz"></div>
+    <div style="margin-top:10px">
+      <button class="btn" id="btnSubmit">Nộp bài</button>
+      <button class="btn" id="btnBackMonhoc">← Quay lại chọn Unit</button>
+    </div>
+    <div id="results"></div>
+  </section>
+
+
+
+
+
+
+
+  <footer>Nội Dung Đã Được Kiểm Duyệt Bởi Tác Giả #*Nông Thành Chung*#</footer>
+</div>
+
+<script>
+// Chuẩn hóa chuỗi
+function norm(s){ return (s||"").toString().replace(/\s+/g,' ').trim().toLowerCase(); }
+
+// Dữ liệu quiz các Unit
+const quizzes = {
+  "cntt1": [
+    { type: "mc", question: "1. Cô ấy thích xem phim hành động vì chúng đầy sự hồi hộp.", answers: { a: "She doesn't like horror films because they are too exciting for her.", b: "She enjoys watching action films because they are full of excitement.", c: "She loves watching animated films about exciting animals in action." }, correctAnswer: "b" },
+    { type: "mc", question: "2. Tôi thích nhất thể loại phim hài vì tôi thích cười.", answers: { a: "My favorite type of film is comedy because I love laughing.", b: "I don't like horror films because I love laughing.", c: "I enjoy watching action films because they are full of excitement." }, correctAnswer: "a" },
+    { type: "mc", question: "3. Tôi thích xem phim khoa học viễn tưởng ở rạp chiếu phim.", answers: { a: "I enjoy watching science-fiction films at the cinema.", b: "I enjoy watching action films at the cinema.", c: "I enjoy watching science-fiction films at home" }, correctAnswer: "a" },
+    { type: "mc", question: "4. Em trai tôi yêu thích phim tài liệu về các loài động vật.", answers: { a: "My little brother loves action films about animals.", b: "My little brother loves documentaries about animals.", c: "My little brother loves animations about animals." }, correctAnswer: "b" },
+    { type: "mc", question: "5. Melanie thích hài lãng mạn nhưng bạn cô ấy lại thích phim giả tưởng.", answers: { a: "Melanie likes comedy shows, but her friend likes animation.", b: "Melanie likes romantic comedy films, but her friend likes fantasy films.", c: "Melanie likes romantic films, but her friend likes action films." }, correctAnswer: "b" },
+    { type: "mc", question: "6. A: ........paint your bedroom walls white? B: No, we........ We are going to paint them blue.", answers: { a: "Do you going to / don't", b: "Are you going to / are", c: "Are you going to / aren't" }, correctAnswer: "c" },
+    { type: "mc", question: "7. A: ........ to buy a house in the countryside? B: No, they aren't. They ........buy a house in the countryside.", answers: { a: "Are they going / are going to", b: "Are they going to / are going to", c: "Are they going / are going" }, correctAnswer: "a" },
+    { type: "mc", question: "8. A: Where ........ to sit? B: She ........ to sit in the front row.", answers: { a: "is she going / is going", b: "is she going to / is going to", c: "is she going to / is going" }, correctAnswer: "a" },
+    { type: "mc", question: "9. A: What ........ to cook for dinner tonight? B: I ........ make chicken satay.", answers: { a: "are you going / am going to", b: "are you going / be going to", c: "are you going to / am going" }, correctAnswer: "a" },
+    { type: "mc", question: "10. A: ........to learn how to make pastries next month? B: Yes, she........", answers: { a: "Is Ella going / isn't", b: "Is Ella going to / is", c: "Is Ella going / is" }, correctAnswer: "c" },
+    
+    { type: "mc", question: "11. What type of film can 'Lost in the Cosmos' possibly be?", answers: { a: "a comedy thriller film", b: "a romantic comedy film", c: "a science fiction film" }, correctAnswer: "c", passage: "Famous scientist Edmond Skirch works with a research team. He suddenly disappears when he is working on a new invention. The police question all the members of the research team to find out what happened. They discover that someone from outer space took Edmond Skirch to their planet." },
+    { type: "mc", question: "12. The brothers must work hard together to........", answers: { a: "become professional football players.", b: "have an easier life in their neighbourhood.", c: "follow a professional lifestyle." }, correctAnswer: "a", passage: "BROTHER - This drama from Venezuela tells the story of two brothers who live in Caracas, a big city in Venezuela. Both brothers love football, and they dream of becoming professional players one day. But life in their neighbourhood is not easy. It is full of problems, danger, and violence. The brothers must work hard together to follow their dream." },
+    { type: "mc", question: "13. After talking with the townspeople, the mother finds out that......", answers: { a: "some visitors knew who shot her son.", b: "some visitors in the town shot her son.", c: "some people visited her son before his death." }, correctAnswer: "c", passage: "MOTHER - This comedy thriller is by the director Kadri Kõusaar. It takes place in a small town in Estonia. A man is shot to death, and his mother tries to find out who did it. She talks to people in town and learns that her son had some visitors before he was shot." },
+    { type: "mc", question: "14. Who is 'April and the Extraordinary World' for?", answers: { a: "It's only for children.", b: "It's only for people who go with their family.", c: "It's for both children and adults." }, correctAnswer: "c", passage: "APRIL AND THE EXTRAORDINARY WORLD - This animated film is set in Paris in 1941. April lives with her family. They are happy together until one day, her family suddenly disappears. April with her clever cat begins an exciting journey to find her family. Along the way, April meets new friends and discovers amazing things. This film is a fun story for the whole family. (In French with English subtitles.)" },
+    { type: "mc", question: "15. What do the friends learn from the climbing trip?", answers: { a: "the power of working together", b: "the power of mountain climbing", c: "the safety of friendship" }, correctAnswer: "a", passage: "THE MOUNTAIN RESCUE - This action film is about a group of friends who love exploring high mountains. One day, they go on a climbing trip together to a snowy mountain. During their climb, they get caught in a snowstorm. They work hard together to stay safe from the storm and they also learn the power of teamwork and friendship." },
+    
+    { type: "fill", question: "16. 'Parasite' is an ............ about the differences between rich and poor people and their effort for better lives.", answer: "emotional story", passage: "Parasite - This film is about a poor family who finds a way to work for a rich family. The film shows the differences between rich and poor people and what they will do to have better lives. It is an emotional story with many surprising moments." },
+    { type: "fill", question: "17. 'Sister' is a ............ about a policewoman named Natalie and her search for her missing sister.", answer: "funny film", passage: "SISTER - This is a film about Natalie, a young girl who works as a policewoman. Natalie lives with her sister. One day, her sister disappears at a festival and Natalie decides to find her sister by herself. There are funny moments that make you burst out laughing." },
+    { type: "fill", question: "18. 'Mother' is a thriller about a woman who tries to find out who ....... son.", answer: "shot her", passage: "MOTHER - This thriller is by director Kadri Kõusaar. It takes place in a small town in Estonia. Someone shot her son, and nobody knows who did it. His mother tries to find out the truth. She talks to people in the town and learns surprising secrets about them." },
+    { type: "fill", question: "19. April's family suddenly disappears. On the way to .........., she meets new friends and discovers amazing things.", answer: "find her family", passage: "APRIL AND THE EXTRAORDINARY WORLD - This animated film is set in Paris in 1941. When her family suddenly disappears, April with her clever cat begins an exciting journey to find her family. Along the way, April meets new friends and discovers amazing things. This film is a fun story for everyone." },
+    { type: "fill", question: "20. 'Knives Out' is a film about a famous detective who tries to find the killer of .......... .", answer: "a crime writer", passage: "Knives Out - A crime writer dies suddenly and nobody knows who did it. Famous detective Benoit Blanc tries to find out who the killer is. The story is full of twists as the detective discovers what really happened." },
+    
+    { type: "fill", question: "21. Are you going to ..........Thailand or in China?", answer: "spend your summer in", passage: "Where are you going to spend your summer? In Thailand or in China?" },
+    { type: "fill", question: "22. She is ..........watch a scary film on TV tonight.", answer: "not going to", passage: "She is going to watch a film on TV tonight, but not something scary." },
+    { type: "fill", question: "23. We are going to ..........Hoa Binh next week.", answer: "visit our grandparents in", passage: "We are going to Hoa Binh next week. We are going to visit our grandparents there." },
+    { type: "fill", question: "24. Are you going ..........dress or the white one?", answer: "to wear the black", passage: "There's the black dress and the white one. What are you going to wear?" },
+    { type: "fill", question: "25. Jenny is going ..........job in Hanoi.", answer: "to look for a", passage: "Jenny is going to Hanoi. She is going to look for a job there." },
+    
+    { type: "order", question: "26. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "She doesn't like watching documentaries because she thinks they are boring.", tokens: ["She", "doesn't like", "watching", "documentaries", "because", "she thinks", "they are", "boring."] },
+    { type: "order", question: "27. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "Are you going to see the new science-fiction film at CGV cinema tonight?", tokens: ["Are", "you", "going to", "see", "the new", "science-fiction", "film at", "CGV cinema", "tonight?"] },
+    { type: "order", question: "28. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "I'm never going to watch a horror film again because it is too scary.", tokens: ["I'm", "never", "going to", "watch", "a horror", "film again", "because", "it is", "too scary."] },
+    { type: "order", question: "29. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "Is Peter going to meet us at the entrance of the cinema?", tokens: ["Is", "Peter", "going to", "meet us", "at the", "entrance", "of the", "cinema?"] },
+    { type: "order", question: "30. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "I'm going to buy tickets for the new fantasy film at the cinema.", tokens: ["I'm", "going to", "buy tickets", "for the new", "fantasy film", "at the", "cinema."] }
+  ],
+
+
+  "cntt2": [
+    { type: "mc", question: "1. Tôi yêu thích bộ phim truyền hình này. Tối nay là tập thứ ba.", answers: { a: "I love this wildlife documentary. Tonight is season three.", b: "I love this drama series. Tonight is episode three.", c: "I love this horror film. Tonight is episode three." }, correctAnswer: "b" },
+    { type: "mc", question: "2. Thời sự nhàm chán quá. Chẳng có gì mới xảy ra trên thế giới ngày hôm nay.", answers: { a: "The news is fun. Something new happened in the world today.", b: "The news is boring. Nothing new happened in the world today.", c: "The film is boring. Nothing new happened in the world today." }, correctAnswer: "b" },
+    { type: "mc", question: "3. Bộ phim tài liệu về động vật hoang dã này nói về những động vật sống dưới lòng đất.", answers: { a: "This wildlife comedy show is about animals under the ground.", b: "This wildlife documentary is about humans under the ground.", c: "This wildlife documentary is about animals under the ground." }, correctAnswer: "c" },
+    { type: "mc", question: "4. Tôi yêu thích các diễn viên trong chương trình hài này. Tất cả họ đều rất hài hước!", answers: { a: "I love the actors in this horror film. They are all so scary!", b: "I love the actors in this fashion show. They are all so boring!", c: "I love the actors in this comedy show. They are all so funny!" }, correctAnswer: "c" },
+    { type: "mc", question: "5. Tôi thích xem chương trình đố vui, nhưng tôi không bao giờ trả lời được các câu hỏi.", answers: { a: "I enjoy watching comedy shows, but I can never answer the questions.", b: "I enjoy watching quiz shows, but I can never answer the questions.", c: "I enjoy watching sports programmes, but I can never play sports." }, correctAnswer: "b" },
+    { type: "mc", question: "6. They exercise every morning to ..... healthy.", answers: { a: "stay", b: "to stay", c: "stayed" }, correctAnswer: "a" },
+    { type: "mc", question: "7. She practices speaking English every day to ..... her skills.", answers: { a: "improve", b: "improving", c: "improves" }, correctAnswer: "a" },
+    { type: "mc", question: "8. He is going to leave early ..... the bus.", answers: { a: "to catch", b: "catching", c: "catch" }, correctAnswer: "a" },
+    { type: "mc", question: "9. She studied hard ..... the exam.", answers: { a: "passed", b: "passing", c: "to pass" }, correctAnswer: "c" },
+    { type: "mc", question: "10. We are going to visit the museum ..... about history.", answers: { a: "to learn", b: "to be learn", c: "learning" }, correctAnswer: "a" },
+    
+    { type: "mc", question: "11. The painting of the Hinczow Lakes is one of Stanislaw Witkiewicz's paintings of .....", answers: { a: "green rice fields", b: "nature and landscapes", c: "people's faces" }, correctAnswer: "b", passage: "Stanislaw Witkiewicz (1885-1939) was a Polish artist and you often see his paintings in art galleries in Poland. Many people like Witkiewicz's paintings of people's faces, but I prefer his paintings of nature and landscapes. I like the painting of the Hinczow Lakes in the Tatra mountains because of the green fields and blue water." },
+    { type: "mc", question: "12. How many different types of artwork does Beatriz Milhazes make?", answers: { a: "two", b: "three", c: "one" }, correctAnswer: "a", passage: "Beatriz Milhazes is a Brazilian artist from Rio de Janeiro. She's famous for her colourful paintings of flowers and interesting shapes. She also makes sculptures with different types of natural and man-made materials. Personally, I like all her work, though I prefer her paintings. She has been called 'Brazil's most successful contemporary artist'." },
+    { type: "mc", question: "13. Why is Adrian Seymour going to Honduras?", answers: { a: "to film wildlife in the rainforest", b: "to finish making the film", c: "to learn about the rainforest" }, correctAnswer: "a", passage: "Last week, I spoke to Adrian Seymour to find out about his films. Adrian makes films about nature and animals. This year he is going to Honduras to make a film about the rainforest. He's going in the summer to film wildlife and then he's going back to his office in the autumn to finish making the film." },
+    { type: "mc", question: "14. What was Andō Hiroshige famous for?", answers: { a: "being poor when he died", b: "his landscape paintings", c: "his thousands of expensive prints" }, correctAnswer: "b", passage: "Japanese art is famous for landscape paintings. Andō Hiroshige worked in the nineteenth century and he's one of Japan's most famous artists. You can often see the sea, the sky, mountains and trees in his paintings. He printed and sold thousands of beautiful prints in his lifetime. However, he was poor when he died." },
+    { type: "mc", question: "15. What happened to Van Gogh's last sunflower painting?", answers: { a: "Someone stole it from Van Gogh.", b: "Van Gogh sold it for $49 million in 1987.", c: "Someone paid a lot of money for it." }, correctAnswer: "c", passage: "Vincent van Gogh (1853-1890) made eleven paintings of sunflowers. They were his favourite paintings because he loved the colour yellow. I prefer his other paintings, but many people love the sunflower paintings. Nowadays, you see them on cards, postcards and T-shirts. Van Gogh died with no money, but in 1987 someone bought the last sunflower painting for $49 million." },
+    
+    { type: "fill", question: "16. Andō Hiroshige was a ..... artist and you can often see the sea and sky, and mountains and trees in his paintings.", answer: "famous Japanese", passage: "Japanese art is famous for landscape paintings. You can often see the sea and sky, and mountains and trees. Andō Hiroshige worked in the nineteenth century and he's one of Japan's most famous artists. He printed and sold thousands of beautiful prints in his lifetime." },
+    { type: "fill", question: "17. Adrian Seymour is going to ..... in the rainforest in Honduras and going back to his office to finish the film.", answer: "make a film", passage: "Adrian Seymour makes films about nature and animals. This year he is going to Honduras to make a film about the rainforest. He's going in the summer to film wildlife and then he's going back to his office in the autumn to finish making the film." },
+    { type: "fill", question: "18. Many people love Vincent van Gogh's ......, which you can see on cards, postcards and T-shirts nowadays.", answer: "paintings of sunflowers", passage: "Vincent van Gogh made eleven paintings of sunflowers. They were his favourite paintings because he loved the colour yellow. I prefer his other paintings, but many people love the sunflower paintings. Nowadays, you see them on cards, postcards and T-shirts." },
+    { type: "fill", question: "19. Beatriz Milhazes is a Brazilian artist who paints and ..... with natural and man-made materials.", answer: "makes sculptures", passage: "Beatriz Milhazes is a Brazilian artist from Rio de Janeiro. She's famous for her colourful paintings of flowers and interesting shapes. She also makes sculptures with different types of natural and man-made materials. Personally, I like all her work, though I prefer her paintings." },
+    { type: "fill", question: "20. Stanislaw Witkiewicz was a Polish artist. He painted ..... and nature and landscapes.", answer: "people's faces", passage: "Stanislaw Witkiewicz (1885-1939) was a Polish artist. Many people like Witkiewicz's paintings of people's faces, but I prefer his paintings of nature and landscapes. I like the painting of the Hinczow Lakes in the Tatra mountains because of the green fields and blue water." },
+    
+    { type: "fill", question: "21. Mr. Watson went ..... the famous Eiffel Tower last week.", answer: "to Paris to visit", passage: "Mr. Watson went to Paris last week. He wanted to visit the famous Eiffel Tower." },
+    { type: "fill", question: "22. I am going to the market to buy a ..... make cakes.", answer: "kilo of flour to", passage: "I need flour to make cakes. I am going to the market to buy a kilo." },
+    { type: "fill", question: "23. Peter brought a book with him to ..... read on the train.", answer: "have something to", passage: "Peter brought a book with him because he wanted to have something to read on the train." },
+    { type: "fill", question: "24. I am going to watch some videos on YouTube ..... to play the guitar.", answer: "to learn how", passage: "I want to learn how to play the guitar, so I am going to watch some videos on YouTube." },
+    { type: "fill", question: "25. Mia is going to the cinema ..... film with Emma tonight.", answer: "to see a new", passage: "Mia is going to the cinema tonight. She wants to see a new film with Emma." },
+    
+    { type: "order", question: "26. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "I bought a map to find my way around the city.", tokens: ["I", "bought", "a map", "to find", "my way", "around", "the city."] },
+    { type: "order", question: "27. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "Is he going to do yoga every morning to stay healthy?", tokens: ["Is", "he", "going to", "do yoga", "every morning", "to stay", "healthy?"] },
+    { type: "order", question: "28. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "Is he going to the rainforest to make a film about wildlife?", tokens: ["Is", "he", "going to", "the rainforest", "to make", "a film", "about", "wildlife?"] },
+    { type: "order", question: "29. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "She went to the library to borrow some books last Sunday.", tokens: ["She", "went", "to the library", "to borrow", "some books", "last Sunday."] },
+    { type: "order", question: "30. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "They are going to travel to France to visit their grandparents next month.", tokens: ["They", "are going to", "travel", "to France", "to visit", "their grandparents", "next month."] }
+  ],
+  
+
+  "cntt3": [
+    { type: "mc", question: "1. Tôi không hứng thú với văn học và tôi không thích đọc sách.", answers: { a: "I am not interested in literature and I don't like books.", b: "I am not interested in chemistry because I don't like chemicals.", c: "I am not interested in literature and I don't like the past." }, correctAnswer: "a" },
+    { type: "mc", question: "2. Tôi hứng thú với địa lý vì tôi muốn tìm hiểu về các địa điểm trên thế giới.", answers: { a: "I am interested in literature because I want to study places in the world.", b: "I am interested in geography because I want to study living things.", c: "I am interested in geography because I want to study places in the world." }, correctAnswer: "c" },
+    { type: "mc", question: "3. Tôi thích vật lý vì tôi muốn tìm hiểu về ánh sáng và năng lượng.", answers: { a: "I like physics because I want to learn about light and numbers.", b: "I like biology because I want to learn about light and energy.", c: "I like physics because I want to learn about light and energy." }, correctAnswer: "c" },
+    { type: "mc", question: "4. Tối nay tôi phải học để chuẩn bị cho bài kiểm tra môn hóa.", answers: { a: "I have to study for a geography test tonight.", b: "I have to study for a chemistry test tonight.", c: "I have to teach for a biology test tonight." }, correctAnswer: "b" },
+    { type: "mc", question: "5. Bạn có thể dạy tôi cách nói tiếng Tây Ban Nha không?", answers: { a: "Can you teach me how to speak Spanish?", b: "Can you learn me how to speak Spanish?", c: "Can you study me how to speak Spanish?" }, correctAnswer: "a" },
+    { type: "mc", question: "6. He ........ gardening. He ........ a gardener all his life.", answers: { a: "loved / is", b: "loves / has been", c: "loves / was" }, correctAnswer: "b" },
+    { type: "mc", question: "7. Mary ........ here. She ........ to Egypt.", answers: { a: "is / has gone", b: "isn't / is going to", c: "isn't / has gone" }, correctAnswer: "c" },
+    { type: "mc", question: "8. A: ............ anything like this before? B: No, I ............", answers: { a: "Did you ever watched / haven't", b: "Have you ever watched / have", c: "Have you ever watched / haven't" }, correctAnswer: "c" },
+    { type: "mc", question: "9. Mother: ............ done the washing up? Son: Yes, I ......... I did it 30 minutes ago.", answers: { a: "Did you / did", b: "Have you / haven't", c: "Have you / have" }, correctAnswer: "c" },
+    { type: "mc", question: "10. A: ............ painting the bedroom yet? B: No, I haven't. I'll finish it tomorrow.", answers: { a: "Have you finished", b: "Did you finish", c: "Has you finished" }, correctAnswer: "a" },
+    
+    { type: "mc", question: "11. What does the text say about the spacecraft to take humans to Mars?", answers: { a: "It is ready to take humans to Mars.", b: "Scientists have stopped working on it.", c: "Scientists haven't finished it yet." }, correctAnswer: "c", passage: "In the world of space travel, scientists have made a lot of progress. They've sent people to the Moon and robots to other planets. However, there is still much to learn. For example, scientists are working on a way to send humans to Mars, but it's really difficult. The spacecraft to take humans to Mars still needs a lot more time to complete." },
+    { type: "mc", question: "12. What is the problem with the invisible cars in the text?", answers: { a: "They aren't completely invisible.", b: "They don't work very well.", c: "They don't have wheels." }, correctAnswer: "a", passage: "In recent centuries, scientists have learned a lot. However, there are still some things which scientists haven't been able to do. For example, some scientists have been trying to make invisible cars by putting cameras on one side and the images are shown on the other side. But they haven't been able to make the wheels invisible." },
+    { type: "mc", question: "13. According to the text, scientists have created robots that can .........", answers: { a: "help build factories", b: "do everything we can do.", c: "do some housework." }, correctAnswer: "c", passage: "Some scientists are trying to create robots that can do everyday tasks. They've made robots that can clean homes or do routine jobs in factories, but these robots can't do everything. For example, they can't cook a meal like humans can. Many robots look more like humans, but they have not yet been able to do everything a person can do." },
+    { type: "mc", question: "14. How have robots changed over the years?", answers: { a: "They can do more things than before.", b: "They need human control more than before.", c: "They can make more money than before." }, correctAnswer: "a", passage: "Some scientists are trying to create robots that can do everyday tasks. They've made robots that can clean homes or do routine jobs in factories, but these robots can't do everything. For example, they can't cook a meal like humans can. Many robots look more like humans, but they have not yet been able to do everything a person can do." },
+    { type: "mc", question: "15. What haven't scientists been able to do?", answers: { a: "solve any transport problems", b: "make self-driving cars", c: "teleport a human" }, correctAnswer: "c", passage: "Many scientists are trying to solve the problem of transport on our busy roads. They've made self-driving cars, but so far they haven't been able to move a human from one place to another without transport. This is called 'teleporting' and scientists don't understand this difficult area of science yet." },
+    
+    { type: "fill", question: "16. Scientists have made robots that clean homes and help in factories, but robots .........everything, like cooking.", answer: "can't do", passage: "Some scientists are trying to create robots that can do everyday tasks. They've made robots that can clean homes or help in factories, but there are still many things robots can't do. For example, they can't cook a meal like humans can." },
+    { type: "fill", question: "17. In the past, robots were simple and worked in factories. Now they ............ different places and do different jobs.", answer: "work in", passage: "In the past, robots were only simple machines and people mainly used them in factories. Now scientists have developed robots that can do different things. There are now robots that work in factories, in houses, in restaurants or in shops. They can work as waiters, cleaners or shop assistants." },
+    { type: "fill", question: "18. Space scientists have made a lot of progress, but they haven't been able to .......... Mars yet.", answer: "send humans to", passage: "In the world of space travel, scientists have made a lot of progress. However, there is still much to learn. For example, scientists are working on a way to send humans to Mars, but it's really difficult. The spacecraft to take humans there is still a long way to complete." },
+    { type: "fill", question: "19. Many scientists have had solutions to transport problems, but they ............. able to teleport.", answer: "haven't been", passage: "Many scientists are trying to solve the problem of transport on our busy roads. They've made self-driving cars, but so far they haven't been able to move a human from one place to another without transport. This is called 'teleporting' and scientists don't understand this difficult area of science yet." },
+    { type: "fill", question: "20. Some scientists have tried to make objects invisible by putting ......... one side and showing images on the other side.", answer: "cameras on", passage: "Some scientists have tried to make objects invisible, but it hasn't worked very well. The car in the photograph has cameras on one side and it shows the images on the other side. But, as you can see, the wheels aren't invisible." },
+    
+    { type: "fill", question: "21. There is no one at school today because all the .......... on holiday.", answer: "teachers have gone", passage: "There/ no one at school today/ because/ all/ teachers/ go on holiday." },
+    { type: "fill", question: "22. ................. any wildlife documentaries about cheetahs before?", answer: "Have you ever watched", passage: "You / ever / watch / wildlife documentaries / cheetahs / before?" },
+    { type: "fill", question: "23. Have ..................... a foreign country?", answer: "you ever studied in", passage: "you / ever / study / foreign country?" },
+    { type: "fill", question: "24. I have .......... this week. Is he on holiday?", answer: "not seen Jim", passage: "I / not / see / Jim / this week. He / on holiday?" },
+    { type: "fill", question: "25. He .......... a musical instrument before. This is his first time.", answer: "has never played", passage: "He / never / play / musical instrument before. This / his first time." },
+    
+    { type: "order", question: "26. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "He has never travelled to a European country in his life.", tokens: ["He", "has never", "travelled", "to a European", "country", "in his life."] },
+    { type: "order", question: "27. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "This man has been here many times, but he has never bought anything.", tokens: ["This man", "has been", "here many times,", "but", "he has never", "bought", "anything."] },
+    { type: "order", question: "28. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "Have you ever made a video and posted it on YouTube?", tokens: ["Have", "you ever", "made", "a video", "and posted", "it on", "YouTube?"] },
+    { type: "order", question: "29. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "I have studied English, but I have never studied Chinese.", tokens: ["I", "have studied", "English,", "but", "I have never", "studied", "Chinese."] },
+    { type: "order", question: "30. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "Have you ever watched a YouTube video to learn something new?", tokens: ["Have", "you ever", "watched", "a YouTube", "video", "to learn", "something new?"] }
+  ],
+  
+
+"cntt4": [
+    { type: "mc", question: "1. Kiara uống rất nhiều cà phê mỗi ngày.", answers: { a: "Kiara makes a lot of coffee every day.", b: "Kiara drinks a lot of water every day.", c: "Kiara drinks a lot of coffee every day." }, correctAnswer: "c" },
+    { type: "mc", question: "2. Chị gái tôi thường hát trong lúc tắm khi chị ấy vui.", answers: { a: "My sister often sings in the shower when she's happy.", b: "My sister always takes a shower when she's worried.", c: "My sister sings and takes a shower when she's happy." }, correctAnswer: "a" },
+    { type: "mc", question: "3. Em họ tôi luôn học 10 từ tiếng Anh mới mỗi ngày để cải thiện vốn từ vựng của mình.", answers: { a: "My cousin always teaches 10 new English words every day to improve my vocabulary.", b: "My cousin always makes 10 new English phrases every day to improve his pronunciation.", c: "My cousin always learns 10 new English words every day to improve his vocabulary." }, correctAnswer: "c" },
+    { type: "mc", question: "4. Mẹ tôi không cho chúng tôi kiểm tra điện thoại trong bữa ăn.", answers: { a: "My mother does not let us take phone calls during meals.", b: "My mother does not let us check our phones during meals.", c: "My mother does not let us make phone calls during meals." }, correctAnswer: "b" },
+    { type: "mc", question: "5. Allan thường cắn móng tay khi cậu ấy căng thẳng.", answers: { a: "Allan never bites his fingers when he is nervous.", b: "Allan usually cuts his fingernails when he is nervous.", c: "Allan usually bites his fingernails when he is nervous." }, correctAnswer: "c" },
+    { type: "mc", question: "6. He ........ the Bible 4 times. He was 15 the first time he read it.", answers: { a: "has read", b: "has readed", c: "reads" }, correctAnswer: "a" },
+    { type: "mc", question: "7. I ........ much last year, but I have earned much this year.", answers: { a: "haven't earned", b: "haven't earn", c: "didn't earn" }, correctAnswer: "c" },
+    { type: "mc", question: "8. I ........ to Prague. I'd love to go there one day.", answers: { a: "have never been", b: "already went", c: "always goes" }, correctAnswer: "a" },
+    { type: "mc", question: "9. A: I have bought a new car. B: Nice. When........ it?", answers: { a: "did you buy", b: "have you bought", c: "have you buyed" }, correctAnswer: "a" },
+    { type: "mc", question: "10. We ........ our project, so now we can take a holiday.", answers: { a: "have already finished", b: "has already finished", c: "did finish already" }, correctAnswer: "a" },
+    
+    { type: "mc", question: "11. How does going to a café become Tyler's habit?", answers: { a: "It's fun, so he makes a daily visit to the café.", b: "It's fun, so his colleagues ask him to go with them.", c: "It's fun, so he spends more money on caffeine." }, correctAnswer: "a", passage: "Habits can also be bad and more difficult to change. For example, Tyler works in an office. Every day his colleagues go to a café during the break. He goes with them and buys coffee and cake. It's fun, so he does it again the next day -- and the next. Soon it's a habit and he's spending more money, drinking more caffeine, and eating too many calories." },
+    { type: "mc", question: "12. What does Michael Phelps' daily routine include?", answers: { a: "Eating the same number of calories every day.", b: "Swimming before and after breakfast.", c: "Listening to hip-hop music." }, correctAnswer: "a", passage: "When Michael Phelps was training, he trained 365 days a year and he had the same training routine every day. He got up at 6.30 a.m. and had breakfast. He ate exactly 6,000 calories every day. Then he swam for six hours a day. Before a race, he always listened to very loud hip-hop music." },
+    { type: "mc", question: "13. How did Michael Phelps train?", answers: { a: "He trained for 28 Olympic games.", b: "He never had a day without training.", c: "He trained with loud hip-hop music every day." }, correctAnswer: "b", passage: "Michael Phelps is a retired Olympic swimmer. When he was training, he trained 365 days a year and he had the same training routine every day. Before a race, he always listened to very loud hip-hop music. Phelps has won 23 Olympic gold medals and 28 Olympic medals in total. That's more than any other person in history." },
+    { type: "mc", question: "14. What is the USA Memory Championship?", answers: { a: "An Alzheimer's research", b: "A memory competition", c: "A climbing event for memory" }, correctAnswer: "b", passage: "Nelson Charles Dellis (born February 4, 1984) is an American memory athlete and consultant. He is a five-time USA Memory Champion, holding the record for most national titles. Dellis is also a co-founder of Memory League and runs Climb 4 Memory, a nonprofit that raises funds and awareness for Alzheimer's research through global mountain climbs." },
+    { type: "mc", question: "15. What have researchers found about habits?", answers: { a: "Stopping a bad habit can take more time than starting a new habit.", b: "Don't go to the cafe if you want to start a new habit.", c: "Starting a new habit takes as much time as stopping a bad habit." }, correctAnswer: "a", passage: "Researchers have found that most people can make something into a habit after 66 days of routine and repetition. Stopping a bad habit can take up to 254 days. They conclude that the 'situation' is important for a habit. So, if you are going to change the habit of having coffee and cake every day, don't go to the café but go for a walk." },
+    
+    { type: "fill", question: "16. Forming a new habit can take 66 days, but ........ one can take more days with a new routine.", answer: "stopping a bad", passage: "Most people can make something into a habit after 66 days of routine and repetition. Stopping a bad habit can take up to 254 days. The 'situation' is important for a habit, so if you want to stop a bad habit, change the situation and start a new routine." },
+    { type: "fill", question: "17. The USA memory champion Nelson Dellis learned ........ and practiced a lot. Now, he teaches others across the USA.", answer: "memory techniques", passage: "Nelson Dellis has won the USA Memory Championship five times. A few years ago, he studied memory techniques and he practiced for hours and hours and hours every day. Since then, he's won many competitions and he has taught his techniques to people all over the USA." },
+    { type: "fill", question: "18. Going to a café every day can become a ......... This means spending more money, drinking and eating too much.", answer: "bad habit", passage: "There are bad habits. For example, imagine someone works in an office. Every day he goes with his colleagues to a café and buys coffee and cake. It's fun, so he does it again and again. Soon it's a habit and he's spending more money, drinking too much caffeine, and eating too many calories." },
+    { type: "fill", question: "19. Michael Phelps had the same daily ........ all year and won the most Olympic medals in history.", answer: "training routine", passage: "Michael Phelps is a retired Olympic swimmer. When he was training, he trained 365 days a year and he had the same training routine every day. Phelps has won 23 Olympic gold medals and 28 Olympic medals in total. That's more than any other person in history." },
+    { type: "fill", question: "20. Nelson Dellis, the five-time USA memory champion, ........ 99 names and faces, and recall 300 numbers.", answer: "can memorize", passage: "Nelson Dellis can listen to the names of 99 people, look at their faces, and memorize every one of them. He can also hear 300 different numbers and then repeat them. Because of his special memory, Nelson has won the USA Memory Championship five times." },
+    
+    { type: "fill", question: "21. Recently, scientists ........ to do routine jobs.", answer: "have designed robots", passage: "Recently / scientists / design / robot / do routine jobs." },
+    { type: "fill", question: "22. How many different countries ........ so far?", answer: "have they visited", passage: "How many/ different countries/ they/ visit/ so far?" },
+    { type: "fill", question: "23. Tom has not seen his family since he........", answer: "moved to Italy", passage: "Tom/ not see/ his family/ since/ he/ move/ Italy." },
+    { type: "fill", question: "24. ........ something important?", answer: "Have you ever forgotten", passage: "You/ ever/ forget/ something/ important?" },
+    { type: "fill", question: "25. ........ the piano when you were a child?", answer: "Did you play", passage: "you/play/piano/when/you/a child?" },
+    
+    { type: "order", question: "26. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "If you want to stop a habit, change the situation and start a new routine.", tokens: ["If", "you want", "to stop", "a habit,", "change", "the situation", "and start", "a new", "routine."] },
+    { type: "order", question: "27. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "Have you ever tried to stop the habit of checking your phone during meals?", tokens: ["Have", "you ever", "tried", "to stop", "the habit", "of checking", "your phone", "during", "meals?"] },
+    { type: "order", question: "28. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "I have watched lots of English movies to improve my vocabulary and listening skills.", tokens: ["I", "have watched", "lots of", "English movies", "to improve", "my vocabulary", "and listening", "skills."] },
+    { type: "order", question: "29. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "When we want to learn something new, it's important to have a daily routine.", tokens: ["When", "we want", "to learn", "something new,", "it's important", "to have", "a daily", "routine."] },
+    { type: "order", question: "30. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "During his training, Michael Phelps ate 6000 calories and swam for six hours a day.", tokens: ["During", "his training,", "Michael Phelps", "ate", "6000 calories", "and swam", "for six", "hours a", "day."] }
+  ],
+
+"cntt5": [
+    { type: "mc", question: "1. Chúng tôi đã tham gia một chuyến tham quan du lịch ở Hà Nội và nhìn thấy nhiều tòa nhà cổ.", answers: { a: "We booked a sightseeing tour in Hanoi and saw some old buildings.", b: "We took a sightseeing tour in Hanoi and saw many old buildings.", c: "We took a backpacking trip in Hanoi and saw many old friends." }, correctAnswer: "b" },
+    { type: "mc", question: "2. Họ đã tiết kiệm tiền trong ba năm trước khi đi du lịch bụi vòng quanh thế giới.", answers: { a: "They borrowed money for 3 years before going on a trip around the world.", b: "They saved money for three years before backpacking around the world.", c: "They made money for 3 years before traveling around the world." }, correctAnswer: "b" },
+    { type: "mc", question: "3. Bạn nên đổi một ít tiền địa phương trước khi bạn đi.", answers: { a: "You should learn some local phrases before you go.", b: "You should get some local money before you go.", c: "You should change some local clothes before you go." }, correctAnswer: "b" },
+    { type: "mc", question: "4. Tôi cần một chuyến du lịch trọn gói vì tôi không muốn phải lên kế hoạch cho chuyến đi.", answers: { a: "I need a package holiday because I don't want to plan the journey.", b: "We really need our beach holiday after working so hard.", c: "I want a backpacking holiday because I just want to enjoy the holiday." }, correctAnswer: "a" },
+    { type: "mc", question: "5. Hãy kiểm tra xem bạn có cần thị thực trước khi mua vé máy bay đến các quốc gia khác.", answers: { a: "Check if you need to change money before you go to other countries for holidays.", b: "Check if you need a passport before you buy plane tickets to other countries.", c: "Check if you need a visa before you buy plane tickets to other countries." }, correctAnswer: "c" },
+    { type: "mc", question: "6. You ........ the bus to school, or you ........ if it's not raining.", answers: { a: "can take / can walk", b: "not have to take / have to walk", c: "not can take / can walk" }, correctAnswer: "a" },
+    { type: "mc", question: "7. You ........ a holiday visa to travel in Australia. You ........ for a maximum of six months.", answers: { a: "have get / can stay", b: "have to get / can stay", c: "have to get / can to stay" }, correctAnswer: "b" },
+    { type: "mc", question: "8. You .......... your own food to the picnic, and you .......... it with others.", answers: { a: "can bring / can share", b: "can bring / not have to", c: "not bring / have to share" }, correctAnswer: "a" },
+    { type: "mc", question: "9. You .......... out, but you .......... back before 10 p.m.", answers: { a: "can't going / have to be", b: "can go / have to be", c: "can go / not have to be" }, correctAnswer: "b" },
+    { type: "mc", question: "10. He ........ for the test tonight. He ........ it to move to the next grade.", answers: { a: "has to study / has to pass", b: "can study / have to pass", c: "have to study / can pass" }, correctAnswer: "a" },
+    
+    { type: "mc", question: "11. When do tourists from some countries need a visa to travel in Japan?", answers: { a: "when they want to be there for more than three months", b: "when they want to get an international driving license", c: "when they want to drive in Japan" }, correctAnswer: "a", passage: "People from some countries can visit Japan without a visa. But they can only stay for up to 90 days. If they want to stay longer, they need to get a visa from the Japanese embassy in their countries. If they want to drive, they need an international driving license, and they have to drive on the left-hand side of the roads." },
+    { type: "mc", question: "12. Where can you get a visa to enter Egypt?", answers: { a: "from major hotels in tourist areas", b: "at some airports in your country", c: "at some Egyptian airports" }, correctAnswer: "c", passage: "You need a visa to enter Egypt, and you can get one online (e-visa) or at some airports when you arrive. The Egyptian Pound is the currency of Egypt. You can use credit cards in major hotels and tourist areas, but you need cash in local markets and smaller shops. Egypt has a desert climate, so temperatures can be very high, especially in the south." },
+    { type: "mc", question: "13. What is the weather like in Italy in January?", answers: { a: "mild in areas by the sea", b: "pleasant in the mountains", c: "hot and dry in the south" }, correctAnswer: "a", passage: "Italy is located on the Mediterranean Sea, so summers (June-August) are hot and dry, particularly in the south. Winters (December-February) are mild in areas on the coast and cold in the mountains. Spring and autumn are ideal times to visit Italy because the weather is most pleasant during these seasons. While many Italians speak or understand English, learning some basic Italian phrases can be helpful." },
+    { type: "mc", question: "14. What do you need to drive in Canada?", answers: { a: "You can drive without a license if you are French.", b: "You can use your driver's license if you can speak English.", c: "You need an International Driving Permit." }, correctAnswer: "c", passage: "The currency of Canada is the Canadian dollar. You can pay by credit and debit card in most places. If your driver's license is in English or French, you can typically use it for short visits. If it is not, an International Driving Permit is necessary. Driving is on the right-hand side of the road. Summers in Canada are warm, but winters can be really cold with heavy snowfall." },
+    { type: "mc", question: "15. How long can tourists stay in Australia?", answers: { a: "for an average of six months", b: "for a maximum of six months", c: "for a minimum of six months" }, correctAnswer: "b", passage: "Australia is a big island country. It's famous for having people from many different countries and for the Sydney Opera House. Australia welcomes tourists from all over the world to visit. But, if you want to travel in Australia, you need a holiday visa from the Embassy in your country. Tourists can stay for six months at the most. If you want to work there, you need a work visa." },
+    
+    { type: "fill", question: "16. In Japan, springs and autumns are pleasant, ........ and winters are snowy in the north and mild in the south.", answer: "summers are hot", passage: "Japan has four distinct seasons. Springs (March-May) and autumns (September-November) are generally mild and pleasant. Summers (June-August) are hot, with a rainy season in June and July. Winters (December-February) vary greatly, with heavy snowfall in northern regions and milder temperatures in the south." },
+    { type: "fill", question: "17. Many nationalities don't need a visa to .........", answer: "travel in Italy", passage: "Italy is part of the Schengen Area, so people from many countries can travel in Italy for up to 90 days without a visa. If you want to drive in Italy, you need an International Driving Permit (IDP) or a EU driving license. Driving is on the right-hand side of the roads." },
+    { type: "fill", question: "18. In Brazil, Portuguese is the official language among 200 different languages. Drive on the right and ............ is necessary.", answer: "a driving license", passage: "Brazil is a big country in America. The official language is Portuguese, but there are more than 200 different languages there because it has people from many different countries. To drive in Brazil, you need a driving license, and you have to drive on the right side of the roads." },
+    { type: "fill", question: "19. You need a visa to visit and work in Australia, and .........licence to drive for any stay over one year.", answer: "an Australian driving", passage: "Australia always welcomes people from all over the world to visit and work there. But you have to get a visa before you go. You can drive a car with your driving licence in Australia. But if you stay for more than one year, you have to take an Australian driving test." },
+    { type: "fill", question: "20. You need ........ to travel in Vietnam for a maximum of three months, plus a work permit to work here.", answer: "a holiday visa", passage: "Tourists who want to go to Vietnam have to get a holiday visa from the Vietnamese Embassy in their country before they leave. With a holiday visa, tourists can stay for three months at the most. To work in Vietnam, you need both a work permit and a visa." },
+    
+    { type: "fill", question: "21. Hotel guests ......pay to go to the disco in the hotel bar.", answer: "don't have to", passage: "Complete the sentence with THREE to FOUR WORDS so that it is similar in meaning with the given information. Use the correct form of 'can' or 'have to'. \n There is a disco in the hotel bar. It is free for all guests." },
+    { type: "fill", question: "22. You ........a ticket in advance, but you can do it if you want.", answer: "don't have to book", passage: "Complete the sentence with THREE to FOUR WORDS so that it is similar in meaning with the given information. Use the correct form of 'can' or 'have to'. \n It's not necessary to book a ticket in advance, but you can do it if you want." },
+    { type: "fill", question: "23. You .........the right-hand side of the road when you are in Brazil.", answer: "have to drive on", passage: "Complete the sentence with THREE to FOUR WORDS so that it is similar in meaning with the given information. Use the correct form of 'can' or 'have to'. \n You can't drive on the left-hand side of the roads when you are in Brazil. Drive on the right-hand side." },
+    { type: "fill", question: "24. Students in this ........casual clothes on Monday.", answer: "school can't wear", passage: "Complete the sentence with THREE to FOUR WORDS so that it is similar in meaning with the given information. Use the correct form of 'can' or 'have to'. \n Students in this school have to wear uniforms on Monday. On other days they can wear casual clothes." },
+    { type: "fill", question: "25. You ........ in the museum, but you have to stay behind the line.", answer: "can take photos", passage: "Complete the sentence with THREE to FOUR WORDS so that it is similar in meaning with the given information. Use the correct form of 'can' or 'have to'. \n Stay behind the line when you take photos in the museum." },
+    
+    { type: "order", question: "26. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "You have to get a visa from the Australian embassy before you travel to Australia.", tokens: ["You", "have to get", "a visa", "from the Australian", "embassy", "before", "you travel", "to Australia."] },
+    { type: "order", question: "27. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "You can use your driving license to stay in Australia for under one year.", tokens: ["You", "can use", "your driving", "license to stay", "in Australia", "for under", "one year."] },
+    { type: "order", question: "28. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "You have to get a work visa from the embassy to work in Australia.", tokens: ["You", "have to get", "a work visa", "from the", "embassy", "to work", "in Australia."] },
+    { type: "order", question: "29. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "You have to drive on the right-hand side of the roads in Brazil.", tokens: ["You", "have to drive", "on the", "right-hand side", "of the roads", "in Brazil."] },
+    { type: "order", question: "30. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "Brazil is huge, so the climate can change between the north and the south.", tokens: ["Brazil", "is huge,", "so", "the climate", "can change", "between", "the north", "and the", "south."] }
+  ],
+"cntt6": [
+    { type: "mc", question: "1. Tôi vừa đặt vé khứ hồi đi Nha Trang cuối tuần này.", answers: { a: "I have just booked a return ticket to Nha Trang this weekend.", b: "I have just booked a single ticket to Nha Trang this weekend.", c: "I have just booked a double room in Nha Trang this weekend." }, correctAnswer: "a" },
+    { type: "mc", question: "2. Chúng tôi thường mua đồ ăn ở các chợ địa phương khi đi du lịch.", answers: { a: "We usually buy food at local markets when we go on holiday.", b: "We never buy food at local shops when we travel home from holiday.", c: "We usually buy souvenirs at local markets when we go on holiday." }, correctAnswer: "a" },
+    { type: "mc", question: "3. Thường là sau khi đến nơi tôi mới đi tìm khách sạn.", answers: { a: "I normally find a hotel after I arrive.", b: "I never find a hotel before I arrive.", c: "I often book a hotel after I arrive." }, correctAnswer: "a" },
+    { type: "mc", question: "4. Anh ấy luôn mua quà lưu niệm ở cửa hàng này.", answers: { a: "He always buys souvenirs in this shop.", b: "He always sells souvenirs to this shop.", c: "He always buys bags in this shop." }, correctAnswer: "a" },
+    { type: "mc", question: "5. Mia thường đặt phòng khách sạn trực tuyến.", answers: { a: "Mia often books train tickets online.", b: "Mia often books hotel rooms online.", c: "Mia often cleans hotel rooms online." }, correctAnswer: "b" },
+    { type: "mc", question: "6. Mike has a very bad toothache. He........the dentist as soon as possible.", answers: { a: "should see", b: "shoulds see", c: "should seeing" }, correctAnswer: "a" },
+    { type: "mc", question: "7. It's going to rain. You........an umbrella when you go out.", answers: { a: "shoulds take", b: "should taking", c: "should take" }, correctAnswer: "c" },
+    { type: "mc", question: "8. ........the picture on the bedroom wall or living room wall?", answers: { a: "I should hang", b: "Should hang I", c: "Should I hang" }, correctAnswer: "c" },
+    { type: "mc", question: "9. I'm going to Da Lat for a few days. Where........?", answers: { a: "do I should stay", b: "I should stay", c: "should I stay" }, correctAnswer: "c" },
+    { type: "mc", question: "10. Norway is very cold in December and January. You........there in winter.", answers: { a: "should not going", b: "shouldn't be go", c: "shouldn't go" }, correctAnswer: "c" },
+    
+    { type: "mc", question: "11. How is Antarctica different from 50 years ago?", answers: { a: "There are more hotels.", b: "There are more wild animals and birds.", c: "There are more people." }, correctAnswer: "c", passage: "Fifty years ago, nobody lived in Antarctica but now between 1,000 and 5,000 scientists live and work there all year, and over 50,000 tourists visit every year. The main way for tourists to visit the continent is by ship. There are no hotels, so cruise holidays are very popular. As a result of so many tourists, some people think the numbers of wild animals and birds are decreasing." },
+    { type: "mc", question: "12. What type of holidays does the writer prefer?", answers: { a: "relaxing holidays with hotels and beaches", b: "sightseeing holidays in old cities", c: "holidays with outdoor activities" }, correctAnswer: "c", passage: "I don't like holidays with hotels, beaches and swimming pools, and I'm not interested in sightseeing in old cities. So for my next holiday, I plan to do something exciting outdoors. There are so many tour companies on the internet offering that type of holiday. One company takes backpacking trips over the Andes of South America. Another company has animal safaris in Africa." },
+    { type: "mc", question: "13. What do cruise companies do to the changes in Antarctica?", answers: { a: "They take more tourists to visit Antarctica.", b: "They give money to passengers to protect the environment.", c: "They help tourists understand wildlife." }, correctAnswer: "c", passage: "There are no hotels in Antarctica, so cruise holidays are very popular. As a result of so many tourists, some people think the numbers of wild animals and birds are decreasing. Many cruise companies teach their passengers about the wildlife in Antarctica and give money to environmental organizations in the region. These organizations want to help the nature and wildlife of Antarctica so it doesn't change in the future." },
+    { type: "mc", question: "14. Why is the writer thinking about going to Antarctica for holiday?", answers: { a: "Because there are lots of people and cities there.", b: "Because there are probably not many people there.", c: "Because it is thousands of kilometres from wildlife." }, correctAnswer: "b", passage: "When I choose a holiday, I don't want to go somewhere and see lots of other tourists. I want to be the only person there. Antarctica should be perfect for me. It's huge, it's quiet and it's thousands of kilometres away from other countries. It doesn't have a government and there are no cities, so there's no pollution or noisy traffic. It has lots of wildlife." },
+    { type: "mc", question: "15. What type of holiday destination does the writer prefer?", answers: { a: "a holiday with hotels and beaches", b: "a quiet place without other people", c: "a crowded city with many tourists" }, correctAnswer: "b", passage: "I don't like holidays with hotels, beaches and swimming pools, and I'm not interested in sightseeing in old cities. When I choose a holiday, I don't want to go somewhere and see lots of other tourists. I want to be the only person there, which is difficult these days. Is there anywhere in the world without other people? What about Antarctica?" },
+    
+    { type: "fill", question: "16. Many tour companies offer holidays outdoors, like backpacking trips, ........or swimming with dolphins.", answer: "animal safaris", passage: "There are so many tour companies on the internet offering holidays outdoors. One company takes backpacking trips over the Andes of South America. Another company has animal safaris in Africa. And you can even go swimming with dolphins with a tour group in Australia." },
+    { type: "fill", question: "17. Many people go to Antarctica to see wildlife, so there aren't as many wild........now as in the past.", answer: "animals and birds", passage: "There are no hotels, so cruise holidays are very popular in Antarctica. You can leave the ship during the day and there are guided tours of areas with wildlife. As a result of so many tourists, some people think the numbers of wild animals and birds are decreasing." },
+    { type: "fill", question: "18. Many cruise companies........are working to protect nature and help the wildlife in Antarctica.", answer: "and environmental organizations", passage: "The numbers of wild animals and birds are decreasing, so many cruise companies teach their passengers about the wildlife in Antarctica. They also give money to environmental organizations in the region. These organizations want to protect nature and help the wildlife of Antarctica so it doesn't change in the future." },
+    { type: "fill", question: "19. No one lived in Antarctica 50 years ago, but now there are lots of........", answer: "scientists and tourists", passage: "Like many places in the world, Antarctica is changing. Fifty years ago, nobody lived here but now between 1,000 and 5,000 scientists live and work there all year, and over 50,000 tourists visit every year. The main way for tourists to visit the continent is by ship." },
+    { type: "fill", question: "20. I don't like holidays with lots of other tourists. I like Antarctica because it's huge, quiet and far........", answer: "from other countries", passage: "When I choose a holiday, I don't want to go somewhere and see lots of other tourists. I want to be the only person there. Antarctica should be perfect for me. It's huge, it's quiet and it's thousands of kilometres away from other countries." },
+    
+    { type: "fill", question: "21. You....................bus. A taxi will be faster.( go )", answer: "should not go by", passage: "For the given situation, complete the advice with THREE to FOUR WORDS using 'should' and the words provided in brackets. \n Public transport is slow to the city centre. " },
+    { type: "fill", question: "22. You........by the sea and have some rest. (holiday)", answer: "should take a holiday", passage: "For the given situation, complete the advice with THREE to FOUR WORDS using 'should' and the words provided in brackets. \n I've worked hard all year and I'm very tired." },
+    { type: "fill", question: "23. Italy has very old and beautiful buildings. You.................( sightseeing )", answer: "should go sightseeing", passage: "For the given situation, complete the advice with THREE to FOUR WORDS using 'should' and the words provided in brackets. \n I'm going to Italy with my family for a holiday this summer." },
+    { type: "fill", question: "24. .....................some words and phrases before she goes.( learn )", answer: "She should learn", passage: "For the given situation, complete the advice with THREE to FOUR WORDS using 'should' and the words provided in brackets. \n Ellen is going to Thailand for holiday next month, but she can't speak the Thai language." },
+    { type: "fill", question: "25. You...................Dublin in February because it is cold and wet then. June or July is warmer.( go )", answer: "should not go to", passage: "For the given situation, complete the advice with THREE to FOUR WORDS using 'should' and the words provided in brackets. \n I am going to Dublin for a holiday with my family. We are thinking about going in February." },
+    
+    { type: "order", question: "26. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "You shouldn't go to Dublin in winter because it is very cold.", tokens: ["You", "shouldn't go", "to Dublin", "in winter", "because", "it is", "very cold."] },
+    { type: "order", question: "27. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "We should take a boat and visit the beautiful islands in Ha Long.", tokens: ["We", "should take", "a boat", "and visit", "the beautiful", "islands in", "Ha Long."] },
+    { type: "order", question: "28. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "You should stay in a homestay when you travel there with your family.", tokens: ["You", "should stay", "in a", "homestay", "when", "you travel", "there with", "your family."] },
+    { type: "order", question: "29. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "We always buy return tickets because we want to save money.", tokens: ["We", "always buy", "return tickets", "because", "we want", "to save", "money."] },
+    { type: "order", question: "30. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "Should I take the bus or a taxi to the city centre?", tokens: ["Should", "I take", "the bus", "or a taxi", "to the", "city centre?"] }
+  ],
+"cntt7": [
+    { type: "mc", question: "1. Cực Bắc cách Cực Nam 20,000 km.", answers: { a: "The North Pole is 20,000 kilometres away the South Pole.", b: "The North Pole is 20,000 kilometres from the South Pole.", c: "The North Pole is 20,000 centimetres from the South Pole." }, correctAnswer: "b" },
+    { type: "mc", question: "2. 70% bề mặt trái đất là nước.", answers: { a: "70 kilometres of the Earth's surface is water.", b: "70 area of the Earth's surface is water.", c: "70 percent of the Earth's surface is water." }, correctAnswer: "c" },
+    { type: "mc", question: "3. Anh ấy cao 1m75 và nặng 65 kg.", answers: { a: "He is 1.75 metres tall and weighs 65 kilograms.", b: "He is 1.75 kilograms tall and weighs 65 metres.", c: "He is 1.75 metres deep and weighs 65 kilograms." }, correctAnswer: "a" },
+    { type: "mc", question: "4. Hôm nay trời lạnh 14 độ.", answers: { a: "It is cold today at 14 percentage.", b: "It is cold today at 14 temperature.", c: "It is cold today at 14 degrees." }, correctAnswer: "c" },
+    { type: "mc", question: "5. Nhiệt độ ở tâm trái đất là bao nhiêu?", answers: { a: "How many degrees does the Earth's center have?", b: "How many temperature is in the Earth's center?", c: "What is the temperature at the Earth's center?" }, correctAnswer: "c" },
+    { type: "mc", question: "6. A: ............to another country? B: No, they won't. They will continue to live here.", answers: { a: "Will they moving", b: "Will they move", c: "Are they moving" }, correctAnswer: "b" },
+    { type: "mc", question: "7. It will be cold, but it........snowy tomorrow.", answers: { a: "will be not", b: "won't be", c: "isn't" }, correctAnswer: "b" },
+    { type: "mc", question: "8. Climate experts predict the rainfall in this region........in the next 30 years.", answers: { a: "will be decrease", b: "is decreasing", c: "will decrease" }, correctAnswer: "c" },
+    { type: "mc", question: "9. A: ........rainy this afternoon? B: No, it won't. It will be snowy.", answers: { a: "Is it", b: "Will it be", c: "Is it going to be" }, correctAnswer: "b" },
+    { type: "mc", question: "10. It........hotter in my country in the future.", answers: { a: "will be", b: "will is", c: "is" }, correctAnswer: "a" },
+    
+    { type: "mc", question: "11. How different is the Arctic now from 56 million years ago?", answers: { a: "The average temperature has decreased by 35 degrees.", b: "The average temperature has increased by 25 degrees.", c: "The average temperature has decreased by 10 degrees." }, correctAnswer: "a", passage: "Ira Block took a photo of the US state of South Carolina, and a photo of Baffin Island in the Arctic. She took the two photos because about fifty-six million years ago, the Arctic probably looked like South Carolina today. At that time, the average temperature in the Arctic was around twenty-five degrees Celsius while it is around minus ten degrees now." },
+    { type: "mc", question: "12. What do climate scientists predict for rainfall in Venezuela?", answers: { a: "It won't change.", b: "There will be more rain.", c: "Rain won't fall as often as now." }, correctAnswer: "b", passage: "Climate scientists have studied the rainfall change on the Earth over 30 years. The change in rainfall is very different from region to region. It has increased in some countries, for example Venezuela, and scientists think it will continue to increase in the future. But rainfall has decreased in other places such as parts of Brazil. In these regions, rainfall will continue to decrease." },
+    { type: "mc", question: "13. What is mainly causing climate change?", answers: { a: "the warming of cars and factories", b: "things humans do", c: "the actions of the greenhouse" }, correctAnswer: "b", passage: "Climate change is a big problem for the world today. It means that the weather on Earth is getting warmer very quickly. The main cause of this warming is human activity, such as using cars and factories. These actions cause the greenhouse effect. Over time, the planet's overall temperature increases." },
+    { type: "mc", question: "14. What trouble does ice melting cause to some animals?", answers: { a: "They are losing their food because of floods.", b: "They can't find the way home.", c: "They don't have a place to live." }, correctAnswer: "c", passage: "One of the biggest issues of climate change is that ice at the poles is melting. This causes sea levels to rise and can lead to flooding in coastal areas. Animals that live in these cold places are also losing their homes. This is why some animals, like polar bears, are in trouble." },
+    { type: "mc", question: "15. What predictions have climate scientists made after studying the global temperature change?", answers: { a: "The temperature will be higher in most parts of the world.", b: "The temperature will increase in all parts of the world.", c: "The temperature will increase by a few degrees each year." }, correctAnswer: "a", passage: "Climate scientists have measured the temperature and rainfall on every part of the Earth over many years. They look at the changes and predict the future. The map shows the temperature change over 30 years. In most parts of the world, the temperature has increased by a few degrees and scientists think it will increase in the future." },
+    
+    { type: "fill", question: "16. The Earth is getting warmer very quickly. The........is human actions, which lead to the greenhouse effect.", answer: "main cause", passage: "Climate change is a big problem for the world today. It means that the weather on Earth is getting warmer very quickly. The main cause of this warming is human activity, such as using cars and factories. These actions cause the greenhouse effect. Over time, the planet's overall temperature increases." },
+    { type: "fill", question: "17. Polar ice melt causes rising........leading to coastal flooding and home loss for polar animals.", answer: "sea levels", passage: "One of the biggest issues of climate change is that ice at the poles is melting. This causes sea levels to rise and can lead to flooding in coastal areas. Animals that live in these cold places are also losing their homes. This is why some animals, like polar bears, are in trouble." },
+    { type: "fill", question: "18. Scientists are working to improve their technology to........weather events.", answer: "predict difficult", passage: "Climate experts have been able to predict storms and warn people in advance. However, there are still weather events that are difficult to predict, like tornadoes. Scientists are working to improve their technology, but it takes time to understand all the factors that cause these events." },
+    { type: "fill", question: "19. Climate scientists have studied........in the Earth's temperature and found that it has increased in most parts of the world.", answer: "the changes", passage: "Climate scientists have measured the temperature on every part of the Earth over many years. They look at the changes and predict the future. In most parts of the world, the temperature has increased by a few degrees and scientists think it will increase in the future." },
+    { type: "fill", question: "20. By studying the change in rainfall, climate scientists have found that rainfall........some regions, and decreased in others.", answer: "has increased in", passage: "Climate scientists have studied the rainfall change on the Earth over 30 years. The change in rainfall is very different from region to region. It has increased in some countries, like Venezuela. But rainfall has decreased in other places such as parts of Brazil." },
+    
+    { type: "fill", question: "21. The temperature won't stop increasing. ........increase.( continue ) ", answer: "It will continue to", passage: "Complete the prediction with THREE to FOUR WORDS. Use 'will' or 'won't' and the word in brackets. "},
+    { type: "fill", question: "22. This is today's weather forecast for Thai Nguyen. The........around 25.3°C. The humidity will be 44%.( temperature )", answer: "temperature will be", passage: "Complete the prediction with THREE to FOUR WORDS. Use 'will' or 'won't' and the word in brackets. "},
+    { type: "fill", question: "23. I think........colder next week. I am going to buy some more sweaters and coats.( be ) ", answer: "it will be", passage: "Complete the prediction with THREE to FOUR WORDS. Use 'will' or 'won't' and the word in brackets. "},
+    { type: "fill", question: "24. Edmond........our dinner party tonight because he is busy with too much work to do.( come )", answer: "won't come to", passage: "Complete the prediction with THREE to FOUR WORDS. Use 'will' or 'won't' and the word in brackets. "},
+    { type: "fill", question: "25. Peter........a house in the city centre because he doesn't have enough money. He will choose one in the country.( buy )", answer: "will not buy", passage: "Complete the prediction with THREE to FOUR WORDS. Use 'will' or 'won't' and the word in brackets. "},
+    
+    { type: "order", question: "26. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "The Earth's temperature will increase in most parts of the world.", tokens: ["The Earth's", "temperature", "will increase", "in most", "parts of", "the world."] },
+    { type: "order", question: "27. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "Will it continue to rain in this area until the end of the week?", tokens: ["Will", "it continue", "to rain", "in this", "area until", "the end", "of the", "week?"] },
+    { type: "order", question: "28. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "I think I will move to a warmer country next winter.", tokens: ["I think", "I will", "move to", "a warmer", "country", "next winter."] },
+    { type: "order", question: "29. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "I don't think there will be more people living in the city in the future.", tokens: ["I don't", "think", "there will be", "more people", "living in", "the city", "in the", "future."] },
+    { type: "order", question: "30. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "There will be longer summers in Asian countries in the future.", tokens: ["There", "will be", "longer summers", "in Asian", "countries", "in the", "future."] }
+  ],
+  "cntt8": [
+    { type: "mc", question: "1. Everest là ngọn núi cao nhất trên thế giới.", answers: { a: "Everest is the highest forest in the world.", b: "Everest is the highest island in the world.", c: "Everest is the highest mountain in the world." }, correctAnswer: "c" },
+    { type: "mc", question: "2. Sa mạc Gobi bao phủ phần lớn miền nam Mông Cổ và miền bắc Trung Quốc.", answers: { a: "The Gobi desert covers large parts of southern Mongolia and northern China.", b: "The Gobi desert covers large oceans of southern Mongolia and northern China.", c: "The Gobi sea covers large parts of southern Mongolia and northern China." }, correctAnswer: "a" },
+    { type: "mc", question: "3. Núi Dinpernalason năm ở phía đông của dãy núi Himalaya.", answers: { a: "Mount Dinpernalason is in the west of Himalayan island.", b: "Mountains Dinpernalason is in the east of Himalayan mountain.", c: "Mount Dinpernalason is in the east of the Himalayan mountains." }, correctAnswer: "c" },
+    { type: "mc", question: "4. Malta là một hòn đảo xinh đẹp ở biển Địa Trung Hải.", answers: { a: "Malta is a beautiful forest in the Mediterranean Sea.", b: "Malta is a beautiful island in the Mediterranean Sea.", c: "Malta is a beautiful island in the Mediterranean Ocean." }, correctAnswer: "b" },
+    { type: "mc", question: "5. Sông Hằng dài 2,525 kms và chạy từ Ấn Độ qua Bangladesh.", answers: { a: "The lake Ganges is 2,525 km long and goes from India to Bangladesh.", b: "The pond Ganges is 2,525 km long and goes from India to Bangladesh.", c: "The river Ganges is 2,525 km long and goes from India to Bangladesh." }, correctAnswer: "c" },
+    { type: "mc", question: "6. ...............is the deepest fresh-water lake in the world. It is located in........", answers: { a: "The Baikal / the Russia", b: "The Baikal / Russia", c: "Baikal / Russia" }, correctAnswer: "c" },
+    { type: "mc", question: "7. ........is the highest mountain in the world. It is in........mountains.", answers: { a: "Everest / the Himalayan", b: "The Everest / the Himalayan", c: "Everest / Himalayan" }, correctAnswer: "a" },
+    { type: "mc", question: "8. ........is the largest hot desert in........", answers: { a: "The Sahara / the world", b: "Sahara / the world", c: "The Sahara / world" }, correctAnswer: "a" },
+    { type: "mc", question: "9. ........is in England. It flows through........", answers: { a: "The River Thames / London", b: "The River Thames / the London", c: "River Thames / London" }, correctAnswer: "a" },
+    { type: "mc", question: "10. .................is a country in Europe. It is made up of........Scotland, Wales, and Northern Ireland.", answers: { a: "The United Kingdom / the England", b: "The United Kingdom / England", c: "United Kingdom / the England" }, correctAnswer: "b" },
+    
+    { type: "mc", question: "11. Why can't we get into Lake Vostok?", answers: { a: "Because it is in Antarctica.", b: "Because it is 14,000 square kilometres and freezing cold.", c: "Because it is under a thick layer of ice." }, correctAnswer: "c", passage: "If you're an explorer who's looking for new places to explore, here is an unexplored place. Lake Vostok in Antarctica is 14,000 square kilometres and freezing cold. Unfortunately, it's been under a sheet of ice for 15 million years. The ice is 3.7 kilometres deep so it's impossible to get to, though scientists have taken water from it." },
+    { type: "mc", question: "12. In what way is the Earth different from most planets?", answers: { a: "It's at a good distance from its sun.", b: "It's nearer to the sun.", c: "It goes around a star." }, correctAnswer: "a", passage: "To find a new Earth, first, astronomers look for a star. Then, they look for planets around it. Once they find a new planet, it's also important to measure the distance between the planet and the sun. That's because most planets ( unlike our Earth ) are either too near to the star or too far away." },
+    { type: "mc", question: "13. Why are astronomers exploring space?", answers: { a: "They want to find a new sun for our solar system.", b: "They want to find more planets around the sun.", c: "They want to find a future place for us to live." }, correctAnswer: "c", passage: "For thousands of years, humans explored the Earth. Now astronomers are exploring space, looking for new planets or a new Earth for humans to live on in the future. First of all, astronomers look for a star. That's because our Earth orbits a star ( the sun ). When astronomers have found a star, they look for planets around it." },
+    { type: "mc", question: "14. What is one of the things astronomers look for on a new planet?", answers: { a: "drink", b: "water", c: "plants" }, correctAnswer: "b", passage: "When astronomers find a planet in a good position, astronomers look for three things: water, air and rock. Water is important because if humans go there, they will need water to drink and to grow plants. If you can grow plants, then the plants can produce air for humans to breathe. Finally, astronomers also look for rocks, because water is often under the rocks." },
+    { type: "mc", question: "15. What stands next to a dangerous river?", answers: { a: "Mount Dinpernalason", b: "the Merume Mountains", c: "the Himalayan mountains" }, correctAnswer: "b", passage: "There are lots of mountains in the world that nobody has climbed yet. For example, there's Mount Dinpernalason in the east of the Himalayan mountains in Asia. Or you could explore the Merume Mountains in Guyana in South America. But they are at the end of the 500-kilometre-long Mazaruni river - it's one of the most dangerous rivers in the world." },
+    
+    { type: "fill", question: "16. Lake Vostok in Antarctica is 14,000 square kilometres and freezing cold with a 3.7-kilometre-thick........on it.", answer: "sheet of ice", passage: "Lake Vostok in Antarctica is 14,000 square kilometres and freezing cold. Unfortunately, it's been under a sheet of ice for 15 million years. The ice is 3.7 kilometres deep so it's impossible to get to, though scientists have taken water from it." },
+    { type: "fill", question: "17. Astronomers are looking for a new Earth by first looking for a star, then........around it.", answer: "looking for planets", passage: "Astronomers are exploring space, looking for new planets or a new Earth for humans to live on in the future. First of all, astronomers look for a star. That's because our Earth orbits a star ( the sun ). When astronomers have found a star, they look for planets around it." },
+    { type: "fill", question: "18. The Amazon rainforest is not as quiet as before because people come there to....................or cut down trees for farming.", answer: "see wildlife", passage: "The Amazon rainforest is not as quiet as it used to be. Every year, more people visit. Some come to see wildlife, while others come to cut down trees for farming. This is bad for the plants and animals living there." },
+    { type: "fill", question: "19. The Merume Mountains in Guyana are at the end of the dangerous........", answer: "Mazaruni river", passage: "The Merume Mountains is in Guyana in South America. But they are at the end of the Mazaruni river, so that's one for someone who also likes boats and maybe swimming - it's one of the most dangerous rivers in the world." },
+    { type: "fill", question: "20. To find a new Earth, astronomers look for a star and planets around it. Then they........from the planets to the sun.", answer: "measure the distance", passage: "To find a new Earth, first, astronomers look for a star. Then, they look for planets around it. Once they find a new planet, it's also important to measure the distance between the planet and the sun. That's because most planets ( unlike our Earth ) are either too near to the star or too far away." },
+    
+    { type: "fill", question: "21. .....................the North Pole from the South Pole?", answer: "How far is", passage: "The North Pole is over 20,000 kilometres from the South Pole." },
+    { type: "fill", question: "22. ........the lake?", answer: "How deep is", passage: "The lake is 12 metres in depth." },
+    { type: "fill", question: "23. ...................of rain fall on the Earth every day?", answer: "How many litres", passage: "Every day, 914,000,000,000,000 litres of rain falls on the Earth." },
+    { type: "fill", question: "24. ....................take humans to travel to Gliese 581g?", answer: "How long will it", passage: "It will take humans 766,000 years to travel to Gliese 581g." },
+    { type: "fill", question: "25. ...................the center of the earth?", answer: "How hot is", passage: "The temperature in the center of the earth is 75000 degrees Celsius." },
+    
+    { type: "order", question: "26. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "Lake Vostok in Antarctica is 14000 square kilometres and freezing cold.", tokens: ["Lake Vostok", "in Antarctica", "is", "14000", "square kilometres", "and freezing", "cold."] },
+    { type: "order", question: "27. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "How long did it take James Cameron to travel to the Mariana Trench?", tokens: ["How long", "did it take", "James Cameron", "to travel", "to the", "Mariana Trench?"] },
+    { type: "order", question: "28. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "Are both Mount Everest and Mount Dinpernalason in the Himalayan mountains?", tokens: ["Are both", "Mount Everest", "and Mount", "Dinpernalason", "in the", "Himalayan mountains?"] },
+    { type: "order", question: "29. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "How far is it from South Carolina in the USA to Antarctica?", tokens: ["How far", "is it", "from South Carolina", "in the USA", "to Antarctica?"] },
+    { type: "order", question: "30. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "The Mekong River is the longest river in Southeast Asia and flows through Vietnam.", tokens: ["The Mekong River", "is the", "longest river", "in Southeast Asia", "and flows", "through Vietnam."] }
+  ],
+  "cntt9": [
+    { type: "mc", question: "1. Chúng ta nên tiết kiệm nước và điện để bảo vệ hành tinh.", answers: { a: "We should save water and electricity to protect the planet.", b: "We should save land and electricity to protect the planet.", c: "We should save water and energy to protect the planet." }, correctAnswer: "a" },
+    { type: "mc", question: "2. Họ sẽ trồng thêm nhiều cây vào tháng tới để tạo không gian xanh.", answers: { a: "They are going to plant more trees next month to create green areas.", b: "They are going to pick up more trees next month to create green areas.", c: "They are going to recycle more trees next month to create green areas." }, correctAnswer: "a" },
+    { type: "mc", question: "3. Chúng tôi vừa tắt điện để hưởng ứng ngày trái đất.", answers: { a: "We have just turned on energy to support Earth Day.", b: "We have just turned off the lights to support Earth Day.", c: "We have just turned off the electric cars to support Earth Day." }, correctAnswer: "b" },
+    { type: "mc", question: "4. Ngày Trái Đất là vào ngày 22 tháng 4 hằng năm.", answers: { a: "Day Earth is on April 22 each year.", b: "Earth Day is on April 22 this year.", c: "Earth Day is on April 22 every year." }, correctAnswer: "c" },
+    { type: "mc", question: "5. Mọi người trồng cây và dọn dẹp rác để giữ môi trường sạch sẽ.", answers: { a: "People cut down trees and throw rubbish to keep the environment clean.", b: "People plant trees and clean up rubbish to keep the environment clean.", c: "People plant trees and pick up streets to keep the environment clean." }, correctAnswer: "b" },
+    { type: "mc", question: "6. You should ........ reusable bags instead of plastic ones to reduce waste.", answers: { a: "be used", b: "to use", c: "use" }, correctAnswer: "c" },
+    { type: "mc", question: "7. Our school ........ an Earth Day event last year.", answers: { a: "organised", b: "will organise", c: "has organised" }, correctAnswer: "a" },
+    { type: "mc", question: "8. ........ is one of the most polluted cities in the world.", answers: { a: "Begusarai", b: "The city Begusarai", c: "The Begusarai" }, correctAnswer: "a" },
+    { type: "mc", question: "9. They are going ........ the park this weekend to celebrate Earth Day.", answers: { a: "cleaning up", b: "to clean up", c: "cleaned up" }, correctAnswer: "b" },
+    { type: "mc", question: "10. We ........ the lights for one hour to support Earth Hour yesterday.", answers: { a: "have turned off", b: "turned off", c: "are going to turn off" }, correctAnswer: "b" },
+    
+    { type: "mc", question: "11. Where did people first celebrate Earth Day?", answers: { a: "in Brazil", b: "in China", c: "in the USA" }, correctAnswer: "c", passage: "Every year on 22nd April, more than 190 countries celebrate Earth Day to protect the planet. The first Earth Day started in 1970 in America. On this day, people do different things to help the environment. Last year, people in China planted new trees. In the USA, they put energy-efficient bulbs into houses. In Brazil, people picked up rubbish in public areas." },
+    { type: "mc", question: "12. What can everyone do to help the environment?", answers: { a: "create laws to protect the environment", b: "save water and plant trees", c: "stop using plastic bags" }, correctAnswer: "b", passage: "Protecting the environment is important for our future. People can help by recycling, saving water, and using less plastic. Planting trees also helps clean the air. If everyone takes small actions, the Earth will be a healthier place to live. Governments and organizations also work together to create laws that protect nature." },
+    { type: "mc", question: "13. Who participated in the first Earth Day?", answers: { a: "People from 175 countries", b: "People of different jobs in the USA", c: "Only famous people in the USA" }, correctAnswer: "b", passage: "Earth Day began on April 22nd in 1970. Over 20 million people went to Earth Day in different cities across the USA. There were politicians, teachers, artists and musicians. Since that day in 1970, Earth Day has become famous all over the world. Nowadays, more than 175 countries have an Earth Day. Lots of people do different things to help the Earth." },
+    { type: "mc", question: "14. How many countries celebrated Earth Day 20 years after it began?", answers: { a: "175", b: "141", c: "200" }, correctAnswer: "b", passage: "Earth Day began in 1970 in the United States, and about 20 million participated. By 1990, the 20th Earth Day, over 200 million people in 141 countries participated. Earth Day has become famous all over the world. Nowadays, more than 175 countries celebrate Earth Day. Lots of people do different things to help the Earth." },
+    { type: "mc", question: "15. Why are rainforests important?", answers: { a: "They provide animals with places to live.", b: "They provide the climate with oxygen.", c: "They provide us with paper." }, correctAnswer: "a", passage: "Paper can be recycled and is easy to dispose of, but paper is made from trees, which are important to the environment. The rainforests are important in many different ways. We need them not just because they help with the climate. They give us oxygen to breathe and plants to make medicines. They are also home to many animals who rely on them for their survival." },
+    
+    { type: "fill", question: "16. On Earth Day, April 22, everyone can do small things like planting trees, cleaning up trash and saving energy to ........Earth.", answer: "make a better", passage: "Earth Day is celebrated on April 22 every year. On this day, people around the world help the environment by planting trees, cleaning up trash, and saving energy. Schools and organizations teach people how to protect nature. Everyone can do small things to make the Earth a better place." },
+    { type: "fill", question: "17. Starting in 1970 with lots of ........ USA participating, Earth Day has now become a worldwide event.", answer: "people across the", passage: "Earth Day began on April 22nd in 1970. Over 20 million people went to Earth Day in different cities across the USA. Since that day in 1970, Earth Day has become famous all over the world. Nowadays, more than 175 countries have an Earth Day." },
+    { type: "fill", question: "18. Trees help the environment by cleaning the air, providing shade, and reducing pollution. Planting more trees makes the Earth ........", answer: "greener and healthier", passage: "Planting trees is good for the environment. Trees clean the air, give shade, and provide homes for animals. They also help reduce pollution and make the Earth cooler. People can plant trees in parks, schools, and gardens. More trees mean a greener and healthier planet for everyone." },
+    { type: "fill", question: "19. Saving energy and using clean energy helps the environment and makes the Earth ........", answer: "a better place", passage: "Saving energy helps the environment. People can turn off lights, unplug devices, and use less water. Walking or biking instead of driving also saves energy. Factories should use clean energy to reduce pollution. If everyone saves energy, the Earth will be a better place to live." },
+    { type: "fill", question: "20. Any small actions to save water (like fixing leaks, using less water, and ......) ensure enough water for the future.", answer: "collecting rainwater", passage: "Saving water is important for the Earth. People can turn off the tap while brushing their teeth, fix leaks, and use less water when washing. Collecting rainwater for plants also helps. If everyone saves water, there will be enough for future generations. Small actions can make a big difference." },
+    
+    { type: "fill", question: "21. I ..........on Earth Day before. This is my first time and I am really enjoying it.", answer: "have never been", passage: "I / never / be / Earth Day before. This / my first time / and I / really enjoy it." },
+    { type: "fill", question: "22. In Brazil, people ... the cities and the countryside.", answer: "pick up rubbish in", passage: "Brazil/ people/ pick/ rubbish/ cities/ countryside." },
+    { type: "fill", question: "23. A: Are you going to participate in the Earth Day celebration? B: Yes. My class is ............presentation on deforestation. (make)", answer: "going to make a", passage: null },
+    { type: "fill", question: "24. A: What activities are you going to do to celebrate Earth Day? B: I'm ............the lights and unnecessary devices to save energy. (turn)", answer: "going to turn off", passage: null },
+    { type: "fill", question: "25. A: Have you ever participated in Earth Day? B: Yes. I joined my village ......than 50 trees on the hill nearby last month. (plant)", answer: "to plant more", passage: null },
+    
+    { type: "order", question: "26. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "I think more people will be ready to protect the environment in the future.", tokens: ["I think", "more people", "will be", "ready to", "protect", "the environment", "in the", "future."] },
+    { type: "order", question: "27. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "We are going to make a presentation about the importance of forests.", tokens: ["We", "are going", "to make", "a presentation", "about", "the importance", "of forests."] },
+    { type: "order", question: "28. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "People have planted millions of trees to celebrate Earth Day.", tokens: ["People", "have planted", "millions", "of trees", "to celebrate", "Earth Day."] },
+    { type: "order", question: "29. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "Everyone should use less plastic and plant more trees to help the Earth.", tokens: ["Everyone", "should", "use", "less plastic", "and plant", "more trees", "to help", "the Earth."] },
+    { type: "order", question: "30. Sắp xếp để thành câu hoàn chỉnh:", correctSentence: "Over twenty million people went to the first Earth Day in the USA.", tokens: ["Over twenty", "million people", "went to", "the first", "Earth Day", "in the USA."] }
+  ]
+};
+
+// Thêm phần 4: Tạo các lựa chọn cho câu hỏi MC
+function buildMcOptions(qObj, qIndex) {
+    const optionsContainer = document.createElement("div");
+    optionsContainer.className = "options";
+    
+    qObj.options.forEach((option, optIndex) => {
+        const optionDiv = document.createElement("div");
+        optionDiv.className = "option";
+        
+        const radio = document.createElement("input");
+        radio.type = "radio";
+        radio.id = `q${qIndex}_opt${optIndex}`;
+        radio.name = `question_${qIndex}`;
+        radio.value = optIndex;
+        
+        const label = document.createElement("label");
+        label.htmlFor = radio.id;
+        label.textContent = option;
+        
+        optionDiv.appendChild(radio);
+        optionDiv.appendChild(label);
+        optionsContainer.appendChild(optionDiv);
+    });
+    return optionsContainer;
+}
+// Hiển thị trang
+function showPage(id){
+  document.querySelectorAll(".wrap > section").forEach(s=>s.classList.add("hidden"));
+  const target = document.getElementById(id);
+  if(target) target.classList.remove("hidden");
+  if(id==="baitap") window.scrollTo({top:0,behavior:"smooth"});
+}
+// Tạo câu hỏi MC (Có thể có đoạn văn)
+function buildMCQuestion(qObj, qIndex){
+  const wrapper = document.createElement("div"); wrapper.className="question";
+  if (qObj.passage) { // Thêm đoạn văn nếu có
+    const readingDiv = document.createElement("div"); 
+    readingDiv.className = "reading";
+    readingDiv.innerText = qObj.passage;
+    wrapper.appendChild(readingDiv);
+  }
+  const p = document.createElement("p"); p.innerText = (qIndex+1) + ". " + qObj.question; wrapper.appendChild(p);
+  const answersDiv = document.createElement("div"); answersDiv.className="answers";
+  for(const key of ["a","b","c"]){
+    if(qObj.answers && qObj.answers[key]){
+      const label = document.createElement("label");
+      label.innerHTML = `<input type="radio" name="q${qIndex}" value="${key}"> ${key.toUpperCase()}. ${qObj.answers[key]}`;
+      answersDiv.appendChild(label);
+    }
+  }
+  const feedback = document.createElement("div"); feedback.className="feedback";
+  wrapper.appendChild(answersDiv); wrapper.appendChild(feedback);
+  answersDiv.addEventListener("change",(e)=>{
+    const val = answersDiv.querySelector(`input[name="q${qIndex}"]:checked`)?.value;
+    if(!val) return;
+    if(val === qObj.correctAnswer){
+      feedback.textContent = "Đúng! ✅"; feedback.className = "feedback ok";
+    } else {
+      feedback.innerHTML = `Sai ❌. Đáp án đúng: <span class="correct-answer">${qObj.answers[qObj.correctAnswer]}</span>`;
+      feedback.className = "feedback err";
+    }
+  });
+  return wrapper;
+}
+// Tạo câu hỏi điền từ (ĐÃ CHỈNH SỬA để hiển thị đoạn văn/passage)
+function buildFillQuestion(qObj, qIndex){
+  const wrapper = document.createElement("div"); wrapper.className="question";
+  // 1. THÊM HIỂN THỊ ĐOẠN VĂN (passage)
+  if (qObj.passage) {
+    const readingDiv = document.createElement("div"); 
+    readingDiv.className = "reading";
+    readingDiv.innerText = qObj.passage;
+    wrapper.appendChild(readingDiv);
+  }
+  // 2. HIỂN THỊ CÂU HỎI
+  const p = document.createElement("p"); 
+  // Thay thế dấu ... bằng chỗ trống gạch dưới (để dễ nhìn hơn)
+  p.innerHTML = (qIndex+1) + ". " + qObj.question.replace(/\.{3,}/g, "__________"); 
+  wrapper.appendChild(p);
+  // 3. INPUT VÀ CHECK
+  const input = document.createElement("input"); input.type="text"; input.placeholder="Nhập câu trả lời..."; input.className="input-blank";
+  wrapper.appendChild(input);
+  const feedback = document.createElement("div"); feedback.className="feedback"; wrapper.appendChild(feedback);
+  function check(){ 
+    const val = norm(input.value);
+    const ok = Array.isArray(qObj.answer) ? qObj.answer.map(a=>norm(a)) : [norm(qObj.answer)];
+    if(ok.includes(val)){
+      feedback.textContent = "Đúng! ✅"; feedback.className = "feedback ok"; input.dataset.correct="1";
+    } else {
+      feedback.innerHTML = `Sai ❌. Đáp án đúng: <span class="correct-answer">${Array.isArray(qObj.answer) ? qObj.answer.join(" / ") : qObj.answer}</span>`;
+      feedback.className = "feedback err"; input.dataset.correct="0";
+    }
+  }
+  input.addEventListener("blur", check);
+  input.addEventListener("keydown", (e)=>{ if(e.key==="Enter"){ e.preventDefault(); check(); input.blur(); }});
+  return wrapper;
+}
+// Tạo câu hỏi sắp xếp
+function buildOrderQuestion(qObj, qIndex){
+  const wrapper = document.createElement("div"); wrapper.className="question";
+  const p = document.createElement("p"); p.innerText = (qIndex+1) + ". " + qObj.question; wrapper.appendChild(p);
+  const sourceLabel = document.createElement("div"); sourceLabel.className="small"; sourceLabel.innerText = "Từ/cụm (kéo từ đây):";
+  const source = document.createElement("div"); source.className = "draggable-source";
+  const targetLabel = document.createElement("div"); targetLabel.className="small"; targetLabel.innerText = "Kéo xuống khung dưới theo thứ tự:";
+  const target = document.createElement("div"); target.className = "draggable-target";
+  const tokens = qObj.tokens.slice();
+  for(let i=tokens.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [tokens[i],tokens[j]]=[tokens[j],tokens[i]]; }
+  tokens.forEach(t=>{ const d = document.createElement("div"); d.className="token"; d.draggable=true; d.innerText = t; source.appendChild(d); });
+  wrapper.appendChild(sourceLabel); wrapper.appendChild(source);
+  wrapper.appendChild(targetLabel); wrapper.appendChild(target);
+  const feedback = document.createElement("div"); feedback.className="feedback"; wrapper.appendChild(feedback);
+  let dragEl = null;
+  document.addEventListener("dragstart",(e)=>{ if(e.target && e.target.classList.contains("token")){ dragEl = e.target; setTimeout(()=> e.target.classList.add("dragging"), 0); } });
+  document.addEventListener("dragend",(e)=>{ if(e.target && e.target.classList.contains("token")) e.target.classList.remove("dragging"); checkOrder(); });
+  [source, target].forEach(area=>{
+    area.addEventListener("dragover", (e)=> e.preventDefault());
+    area.addEventListener("drop", (e)=>{ e.preventDefault(); if(dragEl) area.appendChild(dragEl); });
+    area.addEventListener("click", (e)=>{ if(e.target && e.target.classList.contains("token")){ if(e.target.parentElement === target) source.appendChild(e.target); else target.appendChild(e.target); checkOrder(); } });
+  });
+  function checkOrder(){
+    const placed = Array.from(target.querySelectorAll(".token")).map(n=>n.innerText.trim());
+    if(placed.length === qObj.tokens.length){
+      const candidate = placed.join(" ").replace(/\s+/g,' ').trim();
+      const correct = qObj.correctSentence.replace(/\s+/g,' ').trim();
+      if(norm(candidate) === norm(correct)){
+        feedback.textContent = "Đúng! ✅"; feedback.className = "feedback ok"; wrapper.dataset.correct="1";
+      } else {
+        feedback.innerHTML = `Sai ❌. Thứ tự đúng: <span class="correct-answer">${qObj.correctSentence}</span>`; feedback.className = "feedback err"; wrapper.dataset.correct="0";
+      }
+    } else { feedback.textContent = ""; wrapper.dataset.correct="0"; }
+  }
+  return wrapper;
+}
+// Render quiz
+let currentQuiz = [], currentId = "";
+function renderQuiz(id){
+  currentId = id;
+  currentQuiz = quizzes[id] || [];
+  const quizDiv = document.getElementById("quiz");
+  quizDiv.innerHTML = "";
+  document.getElementById("results").innerText = "";
+  let unitName = "";
+switch(id){
+  case "cntt1": unitName = "Unit 1"; break;
+  case "cntt2": unitName = "Unit 2"; break;
+  case "cntt3": unitName = "Unit 3"; break;
+  case "cntt4": unitName = "Unit 4"; break;
+  case "cntt5": unitName = "Unit 5"; break;
+  case "cntt6": unitName = "Unit 6"; break;
+  case "cntt7": unitName = "Unit 7"; break;
+  case "cntt8": unitName = "Unit 8"; break;
+  case "cntt9": unitName = "Unit 9"; break;
+  default: unitName = "Unit ?"; 
+}
+document.getElementById("quizTitle").innerText = 
+  unitName + " — " + currentQuiz.length + " câu";
+  currentQuiz.forEach((qObj, idx)=>{
+    let el;
+    if(qObj.type === "mc") el = buildMCQuestion(qObj, idx);
+    else if(qObj.type === "fill") el = buildFillQuestion(qObj, idx);
+    else if(qObj.type === "order") el = buildOrderQuestion(qObj, idx);
+    else el = buildMCQuestion(qObj, idx);
+    quizDiv.appendChild(el);
+  });
+  showPage("baitap");
+}
+// Tính điểm
+function calculateScore(){
+  if(!currentQuiz || currentQuiz.length === 0) return {score:0,total:0};
+  let score = 0;
+  currentQuiz.forEach((qObj, idx)=>{
+    const qDiv = document.getElementById("quiz").children[idx];
+    if(qObj.type === "mc"){
+      const fb = qDiv.querySelector(".feedback");
+      if(fb && fb.classList.contains("ok")) score++;
+    } else if(qObj.type === "fill"){
+      const input = qDiv.querySelector("input[type=text]");
+      // Cần gọi hàm kiểm tra (check) một lần nữa trước khi tính điểm nếu người dùng chưa blur
+      if(input && input.dataset.correct!=="1" && input.value) { 
+        // Nếu có giá trị nhưng chưa check, ta check thủ công
+        const val = norm(input.value);
+        const ok = Array.isArray(qObj.answer) ? qObj.answer.map(a=>norm(a)) : [norm(qObj.answer)];
+        if(ok.includes(val)) input.dataset.correct="1";
+      }
+      if(input && input.dataset.correct==="1") score++;
+    } else if(qDiv && qDiv.dataset.correct==="1") score++;
+  });
+  return {score, total: currentQuiz.length};
+}
+// Gắn sự kiện khi load
+window.onload = function() {
+  // Bắt đầu → sang tab chọn môn/unit
+  document.getElementById("btnStart").addEventListener("click", ()=> showPage("monhoc"));
+  // Quay lại từ tab chọn môn → intro
+  document.getElementById("btnBackIntro").addEventListener("click", ()=> showPage("intro"));
+  // Quay lại từ quiz → tab chọn môn
+  document.getElementById("btnBackMonhoc").addEventListener("click", ()=> showPage("monhoc"));
+  // Chọn Unit 1 → render quiz và chuyển sang tab quiz
+  document.getElementById("btnCntt1").addEventListener("click", ()=> renderQuiz("cntt1"));
+  document.getElementById("btnCntt2").addEventListener("click", ()=> renderQuiz("cntt2"));
+  document.getElementById("btnCntt3").addEventListener("click", ()=> renderQuiz("cntt3"));
+  document.getElementById("btnCntt4").addEventListener("click", ()=> renderQuiz("cntt4"));
+  document.getElementById("btnCntt5").addEventListener("click", ()=> renderQuiz("cntt5"));
+  document.getElementById("btnCntt6").addEventListener("click", ()=> renderQuiz("cntt6"));
+  document.getElementById("btnCntt7").addEventListener("click", ()=> renderQuiz("cntt7"));
+  document.getElementById("btnCntt8").addEventListener("click", ()=> renderQuiz("cntt8"));
+  document.getElementById("btnCntt9").addEventListener("click", ()=> renderQuiz("cntt9"));
+  // Nộp bài → tính điểm
+  document.getElementById("btnSubmit").addEventListener("click", ()=>{
+    const r = calculateScore();
+    const resultsDiv = document.getElementById("results");
+    if(r.total > 0){ 
+      const pct = Math.round((r.score / r.total) * 100); 
+      resultsDiv.innerText = `Bạn đúng ${r.score}/${r.total} câu — Tỉ lệ ${pct}%`;
+    } else {
+      resultsDiv.innerText = `Không có câu hỏi nào để tính điểm.`;
+    }
+  });
+  // Mở trang intro ban đầu
+  showPage("intro");
+};
+</script>
+</body>
+</html>
